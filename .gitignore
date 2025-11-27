@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# MuJoCo / logs
+MUJOCO_LOG.TXT
+
+# ROS 2 build/install
+build/
+install/
+log/
+
+# Editors/OS
+.DS_Store
+*.swp
+*.swo

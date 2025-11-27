@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>igris_c_description_public</name>
+  <version>1.1.0</version>
+  <description>This package contains a igris_c_description_public.</description>
+  <maintainer email="dglim@robros.co.kr">robros</maintainer>
+  <license>BSD 3-clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="${prefix}/.."/>
+  </export>
+</package>
