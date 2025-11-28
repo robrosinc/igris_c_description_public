@@ -54,11 +54,6 @@ python scripts/mujoco_file_test.py --gl glfw --realtime \
 - `--realtime` paces sim to wall clock; omit to run as fast as possible.
 - `--headless` skips the viewer; `--force-viewer` tries even with headless backends.
 
-### Minimal runner
-```bash
-python scripts/mujoco_minimal.py --gl glfw --xml mujoco/igris_c_v2.xml
-```
-Add `--headless` to skip the viewer or `--steps N` to limit headless steps.
 
 ### Common viewer tips
 - Run from a terminal inside your desktop session (`DISPLAY` set, `glxinfo -B` works).
