@@ -1,0 +1,377 @@
+<?xml version="1.0"?>
+<robot name="Right_Hand_C">
+
+<link name="base_link">
+    <inertial>
+      <mass value="0.168" />
+      <origin xyz="0.00321 -0.00301 0.04736" />
+      <inertia ixx="0.00016" ixy="0.00000" ixz="0.00002" iyy="0.00025" iyz="-0.00001" izz="0.00012" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Palm_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Palm_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+<link name="Link_Thumb_Proximal">
+    <inertial>
+      <mass value="0.018" />
+      <origin xyz="0.00704 -0.00006 0.01031" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual> 
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Proximal_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Proximal_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="Link_Thumb_Middle">
+    <inertial>
+      <mass value="0.019" />
+      <origin xyz="-0.00154 0.00041 0.01911" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Middle_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Middle_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="Link_Thumb_Distal">
+    <inertial>
+      <mass value="0.011" />
+      <origin xyz="-0.00015 -0.00047 0.01843" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Distal_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Thumb_Distal_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="Link_Index_Middle">
+    <inertial>
+      <mass value="0.018" />
+      <origin xyz="0.00010 0.00031 0.02005" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+   <link name="Link_Middle_Middle">
+    <inertial>
+      <mass value="0.018" />
+      <origin xyz="0.00010 0.00031 0.02005" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+<link name="Link_Ring_Middle">
+    <inertial>
+      <mass value="0.018" />
+      <origin xyz="0.00010 0.00031 0.02005" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+ <link name="Link_Little_Middle">
+    <inertial>
+      <mass value="0.018" />
+      <origin xyz="0.00010 0.00031 0.02005" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Middle.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+ <link name="Link_Index_Distal">
+    <inertial>
+      <mass value="0.012" />
+      <origin xyz="0.00013 -0.00035 0.01857" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="Link_Middle_Distal">
+    <inertial>
+      <mass value="0.012" />
+      <origin xyz="0.00013 -0.00035 0.01857" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+    <link name="Link_Ring_Distal">
+    <inertial>
+      <mass value="0.012" />
+      <origin xyz="0.00013 -0.00035 0.01857" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+   <link name="Link_Little_Distal">
+    <inertial>
+      <mass value="0.012" />
+      <origin xyz="0.00013 -0.00035 0.01857" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/Finger_Distal.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <!-- <link name="Link_">
+    <inertial>
+      <mass value="" />
+      <origin xyz=" " />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description_public/meshes/igris_c_hand/.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link> -->
+
+
+  <joint name="0_Joint_Thumb_Proximal" type="revolute">
+    <parent link="base_link" />
+    <child link="Link_Thumb_Proximal" />
+    <origin xyz="0.026 -0.0132 0.0299" rpy="0.08726646 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.727875959" upper="0" effort="1000" velocity="5.0" />
+  </joint>
+ 
+  <joint name="1_Joint_Thumb_Middle" type="revolute">
+    <parent link="Link_Thumb_Proximal" />
+    <child link="Link_Thumb_Middle" />
+    <origin xyz="0.0230 -0.0035 0.015" rpy="-1.22173048 0 -1.57079633" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.221730476" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="2_Joint_Thumb_Distal" type="revolute">
+    <parent link="Link_Thumb_Middle" />
+    <child link="Link_Thumb_Distal" />
+    <origin xyz="0 -0.001 0.04" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="3_Joint_Index_Middle" type="revolute">
+    <parent link="base_link" />
+    <child link="Link_Index_Middle" />
+    <origin xyz="0.0305 0.002 0.101 " rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="4_Joint_Index_Distal" type="revolute">
+    <parent link="Link_Index_Middle" />
+    <child link="Link_Index_Distal" />
+    <origin xyz="0 -0.001 0.04" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="5_Joint_Middle_Middle" type="revolute">
+    <parent link="base_link" />
+    <child link="Link_Middle_Middle" />
+    <origin xyz="0.0085 0.002 0.101" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="6_Joint_Middle_Distal" type="revolute">
+    <parent link="Link_Middle_Middle" />
+    <child link="Link_Middle_Distal" />
+    <origin xyz="0 -0.001 0.04" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="7_Joint_Ring_Middle" type="revolute">
+    <parent link="base_link" />
+    <child link="Link_Ring_Middle" />
+    <origin xyz="-0.0139 0.0010 0.0990" rpy="-0.00121872 -0.03488531 0.03492784" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="8_Joint_Ring_Distal" type="revolute">
+    <parent link="Link_Ring_Middle" />
+    <child link="Link_Ring_Distal" />
+    <origin xyz="0 -0.001 0.04" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="9_Joint_Little_Middle" type="revolute">
+    <parent link="base_link" />
+    <child link="Link_Little_Middle" />
+    <origin xyz="-0.0362 -0.0012 0.0942" rpy="-0.00274895 -0.08721049 0.05251174" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+  <joint name="10_Joint_Little_Distal" type="revolute">
+    <parent link="Link_Little_Middle" />
+    <child link="Link_Little_Distal" />
+    <origin xyz="0 -0.001 0.04" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint>
+
+
+  <!-- <joint name="Joint_" type="revolute">
+    <parent link="Link_" />
+    <child link="Link_" />
+    <origin xyz=" " rpy="0 0 0" />
+    <axis xyz=" " />
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="5.0" />
+  </joint> -->
+  
+
+</robot>

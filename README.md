@@ -9,9 +9,7 @@ ROS 2 package containing the IGRIS-C robot description (URDF, meshes, RViz conf
 - `launch/display_urdf_with_gui.launch.py`: Launch RViz with joint sliders and state publisher.
 - `rviz/urdf.rviz`: Preconfigured RViz view.
 - Scripts:
-  - `scripts/imu_tf_broadcaster.py`: ROS 2 node to broadcast IMU orientation as TF.
   - `scripts/mujoco_file_test.py`: Full-feature MuJoCo runner (keyframe init, realtime pacing, optional viewer/headless).
-  - `scripts/mujoco_minimal.py`: Minimal MuJoCo runner for quick checks.
 
 ## Requirements
 - ROS 2 with `ament_cmake`, `robot_state_publisher`, `joint_state_publisher_gui`, and `rviz2`.

@@ -1,0 +1,6 @@
+{
+    "urdf-visualizer.packages": {
+        
+        "igris_c_description_public": "${workspaceFolder}"
+    }
+}
