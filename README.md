@@ -7,6 +7,7 @@ ROS 2 package containing the IGRIS-C robot description (URDF, meshes, RViz conf
 - `mujoco/`: MuJoCo MJCF models (e.g., `igris_c_v2.xml`, parallel variants, keyframes).
 - `meshes/`: Geometry used by the URDF.
 - `launch/display_urdf_with_gui.launch.py`: Launch RViz with joint sliders and state publisher.
+- `launch/visualize.launch.py`: Visualize live robot joint states in RViz.
 - `rviz/urdf.rviz`: Preconfigured RViz view.
 - Scripts:
   - `scripts/mujoco_file_test.py`: Full-feature MuJoCo runner (keyframe init, realtime pacing, optional viewer/headless).
@@ -33,6 +34,24 @@ ros2 launch igris_c_description_public display_urdf_with_gui.launch.py \
   urdf_path:=urdf/igris_c_v2.urdf
 ```
 Override `urdf_path` if you want a different URDF in `share/igris_c_description_public`.
+
+### Live visualizer (robot_state_publisher + RViz)
+Use the live joint state topic (default `/igris_c/joint_states`):
+```bash
+ros2 launch igris_c_description_public visualize.launch.py
+```
+
+Common options:
+```bash
+# Disable joint name remap if your joint names already match the URDF
+ros2 launch igris_c_description_public visualize.launch.py use_joint_state_remap:=false
+
+# Use a different URDF inside this package
+ros2 launch igris_c_description_public visualize.launch.py urdf_path:=urdf/igris_c_v2_parallel.urdf
+
+# Change fixed frame
+ros2 launch igris_c_description_public visualize.launch.py fixed_frame:=base_link fixed_frame_parent:=world
+```
 
 ## MuJoCo simulation (Python)
 Recommendation: use a local venv to avoid Conda `libGL` conflicts.

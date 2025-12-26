@@ -5,7 +5,7 @@ find_package(ament_cmake REQUIRED)
 
 install(DIRECTORY launch meshes rviz urdf mujoco DESTINATION share/${PROJECT_NAME})
 
-# install(PROGRAMS scripts/imu_tf_broadcaster.py DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/joint_state_remap.py DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
