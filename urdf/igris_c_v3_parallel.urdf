@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="igris_c_v2_parallel">
+<robot name="igris_c_v3_parallel">
 
   <link name="base_link">
     <inertial>
@@ -11,8 +11,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Yaw.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.90 0.90 0.90 1" />
       </material>
     </visual>
     <collision>
@@ -32,8 +32,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Yaw_B.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.90 0.90 0.90 1" />
       </material>
     </visual>
     <collision>
@@ -53,8 +53,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Roll_B.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.90 0.90 0.90 1" />
       </material>
     </visual>
     <collision>
@@ -75,8 +75,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Pitch_B.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.56 0.56 0.58 1" />
       </material>
     </visual>
     <collision>
@@ -97,8 +97,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Flange_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -120,8 +120,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Parallel_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -143,8 +143,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Flange_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -165,8 +165,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Waist_Parallel_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -189,8 +189,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.56 0.56 0.58 1" />
       </material>
     </visual>
     <collision>
@@ -210,8 +210,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Roll_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -231,8 +231,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Yaw_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -252,8 +252,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Knee_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -273,8 +273,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -294,8 +294,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Roll_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.86 0.86 0.87 1" />
       </material>
     </visual>
     <collision>
@@ -315,8 +315,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Flange_Out_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -336,8 +336,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Parallel_Out_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -357,8 +357,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Flange_In_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -378,8 +378,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Parallel_In_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -400,8 +400,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.56 0.56 0.58 1" />
       </material>
     </visual>
     <collision>
@@ -421,8 +421,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Roll_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -442,8 +442,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hip_Yaw_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -463,8 +463,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Knee_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -484,8 +484,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.84 0.84 0.85 1" />
       </material>
     </visual>
     <collision>
@@ -505,8 +505,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Roll_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.86 0.86 0.87 1" />
       </material>
     </visual>
     <collision>
@@ -526,8 +526,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Flange_Out_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -547,8 +547,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Parallel_Out_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -568,8 +568,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Flange_In_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -589,8 +589,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Ankle_Parallel_In_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -611,8 +611,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.90 0.90 0.90 1" />
       </material>
     </visual>
     <collision>
@@ -632,8 +632,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Roll_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -653,8 +653,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Yaw_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.82 0.82 0.83 1" />
       </material>
     </visual>
     <collision>
@@ -674,8 +674,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Elbow_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -695,8 +695,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Yaw_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.82 0.82 0.83 1" />
       </material>
     </visual>
     <collision>
@@ -716,8 +716,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Flange_Front_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -738,8 +738,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Flange_Back_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -759,8 +759,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Roll_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -780,8 +780,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -801,8 +801,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hand_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.58 0.58 0.60 1" />
       </material>
     </visual>
     <collision>
@@ -822,8 +822,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Universal_Front_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -843,8 +843,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Parallel_Front_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -864,8 +864,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Universal_Back_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -885,8 +885,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Parallel_Back_Left.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -907,8 +907,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.90 0.90 0.90 1" />
       </material>
     </visual>
     <collision>
@@ -928,8 +928,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Roll_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -949,8 +949,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Shoulder_Yaw_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.82 0.82 0.83 1" />
       </material>
     </visual>
     <collision>
@@ -970,8 +970,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Elbow_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -991,8 +991,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Yaw_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.82 0.82 0.83 1" />
       </material>
     </visual>
     <collision>
@@ -1012,8 +1012,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Flange_Front_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1033,8 +1033,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Flange_Back_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1054,8 +1054,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Roll_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1075,8 +1075,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Pitch_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1096,8 +1096,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Universal_Front_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1117,8 +1117,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Parallel_Front_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1138,8 +1138,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Universal_Back_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1159,8 +1159,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Wrist_Parallel_Back_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.72 0.72 0.74 1" />
       </material>
     </visual>
     <collision>
@@ -1180,8 +1180,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Hand_Right.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.58 0.58 0.60 1" />
       </material>
     </visual>
    <collision>
@@ -1202,8 +1202,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Neck_Yaw.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.46 0.46 0.48 1" />
       </material>
     </visual>
     <collision>
@@ -1223,8 +1223,8 @@
       <geometry>
         <mesh filename="package://igris_c_description_public/meshes/igris_c_v2/Neck_Pitch.stl" scale="0.01 0.01 0.01"/>
       </geometry>
-      <material name="random">
-        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      <material>
+        <color rgba="0.92 0.93 0.91 1" />
       </material>
     </visual>
     <collision>

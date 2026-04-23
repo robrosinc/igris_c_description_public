@@ -114,7 +114,6 @@
       <inertial pos="0.00175 0.00112 0.15154" mass="12.974" fullinertia="0.15110 0.12880 0.08070 -0.00136 0.00843 -0.00089"/>
       <geom name="base_link_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="Upper_Body" class="collision" />
       <!-- <geom name="base_link_collision" pos="0 0 0.17" quat="1 0 0 0" size="0.11 0.115 0.165" type="box" class="collision" /> -->
-      <geom name="base_link_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Upper_Body" class="collision" />
       <geom name="base_link_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Upper_Body" class="visual" />
       <body name="Link_Waist_Yaw" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
         <joint name="Joint_Waist_Yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1" />
@@ -146,7 +145,7 @@
                 <body name="Link_Hip_Yaw_Left" pos="0.002 0 -0.076" quat="1.0 0.0 0.0 0.0">
                   <joint name="Joint_Hip_Yaw_Left" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1" />
                   <inertial pos="-0.01286 -0.00388 -0.10563" quat="1.0 0.0 0.0 0.0" mass="4.813" diaginertia="0.03161 0.03396 0.01135" />
-                  <geom name="Link_Hip_Yaw_Left_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="Hip_Yaw_Left_collision" class="collision" />
+                  <!-- <geom name="Link_Hip_Yaw_Left_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="Hip_Yaw_Left_collision" class="collision" /> -->
                   <geom name="Link_Hip_Yaw_Left_collision" pos="-0.02 0 -0.12" quat="1 0 0 0" size="0.08 0.07 0.12" type="box" class="collision" />
                   <geom name="Link_Hip_Yaw_Left_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Hip_Yaw_Left" class="visual" />
                   <body name="Link_Knee_Pitch_Left" pos="-0.055 0 -0.263" quat="1.0 0.0 0.0 0.0">
@@ -185,8 +184,8 @@
                 <body name="Link_Hip_Yaw_Right" pos="0.002 0 -0.076" quat="1.0 0.0 0.0 0.0">
                   <joint name="Joint_Hip_Yaw_Right" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1" />
                   <inertial pos="-0.01286 0.00388 -0.10564" quat="1.0 0.0 0.0 0.0" mass="4.813" diaginertia="0.03161 0.03398 0.01137" />
-                  <geom name="Link_Hip_Yaw_Right_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="Hip_Yaw_Right_collision" class="collision" />
-                  <geom name="Link_Hip_Yaw_Right_collision" pos="-0.02 0 -0.12" quat="1 0 0 0" size="0.08 0.07 0.12" type="box" class="collision"  rgba="1.0 0.28 0.1 0.9"/>
+                  <!-- <geom name="Link_Hip_Yaw_Right_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="Hip_Yaw_Right_collision" class="collision" /> -->
+                  <geom name="Link_Hip_Yaw_Right_collision" pos="-0.02 0 -0.12" quat="1 0 0 0" size="0.08 0.07 0.12" type="box" class="collision"/>
                   <geom name="Link_Hip_Yaw_Right_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Hip_Yaw_Right" class="visual" />
                   <body name="Link_Knee_Pitch_Right" pos="-0.055 0 -0.263" quat="1.0 0.0 0.0 0.0">
                     <joint name="Joint_Knee_Pitch_Right" type="hinge" ref="0.0" class="actuator_150" range="0 2.28638132" axis="0 1 0" />

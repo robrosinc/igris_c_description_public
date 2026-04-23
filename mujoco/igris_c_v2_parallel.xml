@@ -16,17 +16,17 @@
 
     <motor ctrllimited="true" />
     <default class="actuator_150">
-      <joint damping="0.5" frictionloss="0.5" limited="true" armature="0.2"/>
+      <joint damping="0.5" frictionloss="0.5" limited="true" armature="0.12"/>
       <motor ctrlrange="-150.0 150.0"/>
     </default>  
 
     <default class="actuator_120">
-        <joint damping="0.5"  frictionloss="2." limited="true" armature="0.12"/>
+        <joint damping="0.5"  frictionloss="2." limited="true" armature="0.055"/>
         <motor ctrlrange="-120.0 120.0" />
     </default>  
 
     <default class="actuator_90">
-        <joint damping="0.0"  frictionloss="0.1" limited="true" armature="0.1"/>
+        <joint damping="3.0"  frictionloss="0.1" limited="true" armature="0.1"/>
         <motor ctrlrange="-90.0 90.0" />
     </default>  
 
@@ -382,7 +382,7 @@
                     </body>
                     <body name="Link_Wrist_Universal_Front_Left" pos="0.01000 0.02150 -0.01000" quat="1.0 0.0 0.0 0.0">
                       <joint name="Joint_Wrist_Universal_Front_Left" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0" />
-                      <inertial pos="0.00000 -0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.005" diaginertia="0.000001 0.000001 0.000001" />
+                      <inertial pos="0.00000 -0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.002" diaginertia="0.00001 0.00001 0.00001" />
                       <geom name="Link_Wrist_Universal_Front_Left_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Wrist_Universal_Front_Left" class="visual" />
                       <body name="Link_Wrist_Parallel_Front_Left" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                         <joint name="Joint_Wrist_Parallel_Front_Left" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0" />
@@ -392,7 +392,7 @@
                     </body>
                     <body name="Link_Wrist_Universal_Back_Left" pos="-0.01000 0.02150 -0.01000" quat="1.0 0.0 0.0 0.0">
                       <joint name="Joint_Wrist_Universal_Back_Left" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0" />
-                      <inertial pos="0.00000 -0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.005" diaginertia="0.000001 0.000001 0.000001" />
+                      <inertial pos="0.00000 -0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.002" diaginertia="0.00001 0.00001 0.00001" />
                       <geom name="Link_Wrist_Universal_Back_Left_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Wrist_Universal_Back_Left" class="visual" />
                       <body name="Link_Wrist_Parallel_Back_Left" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                         <joint name="Joint_Wrist_Parallel_Back_Left" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0" />
@@ -483,7 +483,7 @@
                     </body>
                     <body name="Link_Wrist_Universal_Front_Right" pos="0.01000 -0.02150 -0.01000" quat="1.0 0.0 0.0 0.0">
                       <joint name="Joint_Wrist_Universal_Front_Right" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0" />
-                      <inertial pos="0.00000 0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.005" diaginertia="0.000001 0.000001 0.000001" />
+                      <inertial pos="0.00000 0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.002" diaginertia="0.00001 0.00001 0.00001" />
                       <geom name="Link_Wrist_Universal_Front_Right_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Wrist_Universal_Front_Right" class="visual" />
                       <body name="Link_Wrist_Parallel_Front_Right" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                         <joint name="Joint_Wrist_Parallel_Front_Right" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0" />
@@ -493,7 +493,7 @@
                     </body>
                     <body name="Link_Wrist_Universal_Back_Right" pos="-0.01000 -0.02150 -0.01000" quat="1.0 0.0 0.0 0.0">
                       <joint name="Joint_Wrist_Universal_Back_Right" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0" />
-                      <inertial pos="0.00000 0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.005" diaginertia="0.000001 0.000001 0.000001" />
+                      <inertial pos="0.00000 0.00189 -0.00004" quat="1.0 0.0 0.0 0.0" mass="0.002" diaginertia="0.00001 0.00001 0.00001" />
                       <geom name="Link_Wrist_Universal_Back_Right_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="Wrist_Universal_Back_Right" class="visual" />
                       <body name="Link_Wrist_Parallel_Back_Right" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                         <joint name="Joint_Wrist_Parallel_Back_Right" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0" />
@@ -588,42 +588,42 @@
     <motor name="Joint_Neck_Pitch" joint="Joint_Neck_Pitch" class="actuator_7" />
 
     <!-- POSITION CONTROL -->
-    <position name="Joint_Waist_Yaw_Pos" joint="Joint_Waist_Yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Waist_Flange_Left_Pos" joint="Joint_Waist_Flange_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Waist_Flange_Right_Pos" joint="Joint_Waist_Flange_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Waist_Yaw_Pos" joint="Joint_Waist_Yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Waist_Flange_Left_Pos" joint="Joint_Waist_Flange_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Waist_Flange_Right_Pos" joint="Joint_Waist_Flange_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
 
-    <position name="Joint_Hip_Pitch_Left_Pos" joint="Joint_Hip_Pitch_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Hip_Roll_Left_Pos" joint="Joint_Hip_Roll_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Hip_Yaw_Left_Pos" joint="Joint_Hip_Yaw_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Knee_Pitch_Left_Pos" joint="Joint_Knee_Pitch_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Ankle_Flange_Out_Left_Pos" joint="Joint_Ankle_Flange_Out_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Ankle_Flange_In_Left_Pos" joint="Joint_Ankle_Flange_In_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Pitch_Left_Pos" joint="Joint_Hip_Pitch_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Roll_Left_Pos" joint="Joint_Hip_Roll_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Yaw_Left_Pos" joint="Joint_Hip_Yaw_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Knee_Pitch_Left_Pos" joint="Joint_Knee_Pitch_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Ankle_Flange_Out_Left_Pos" joint="Joint_Ankle_Flange_Out_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Ankle_Flange_In_Left_Pos" joint="Joint_Ankle_Flange_In_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
 
-    <position name="Joint_Hip_Pitch_Right_Pos" joint="Joint_Hip_Pitch_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Hip_Roll_Right_Pos" joint="Joint_Hip_Roll_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Hip_Yaw_Right_Pos" joint="Joint_Hip_Yaw_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Knee_Pitch_Right_Pos" joint="Joint_Knee_Pitch_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Ankle_Flange_Out_Right_Pos" joint="Joint_Ankle_Flange_Out_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Ankle_Flange_In_Right_Pos" joint="Joint_Ankle_Flange_In_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Pitch_Right_Pos" joint="Joint_Hip_Pitch_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Roll_Right_Pos" joint="Joint_Hip_Roll_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Hip_Yaw_Right_Pos" joint="Joint_Hip_Yaw_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Knee_Pitch_Right_Pos" joint="Joint_Knee_Pitch_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Ankle_Flange_Out_Right_Pos" joint="Joint_Ankle_Flange_Out_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Ankle_Flange_In_Right_Pos" joint="Joint_Ankle_Flange_In_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
     
-    <position name="Joint_Shoulder_Pitch_Left_Pos" joint="Joint_Shoulder_Pitch_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Shoulder_Roll_Left_Pos" joint="Joint_Shoulder_Roll_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Shoulder_Yaw_Left_Pos" joint="Joint_Shoulder_Yaw_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Elbow_Pitch_Left_Pos" joint="Joint_Elbow_Pitch_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Yaw_Left_Pos" joint="Joint_Wrist_Yaw_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Motor_Output_Front_Left_Pos" joint="Joint_Wrist_Motor_Output_Front_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Motor_Output_Back_Left_Pos" joint="Joint_Wrist_Motor_Output_Back_Left" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Pitch_Left_Pos" joint="Joint_Shoulder_Pitch_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Roll_Left_Pos" joint="Joint_Shoulder_Roll_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Yaw_Left_Pos" joint="Joint_Shoulder_Yaw_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Elbow_Pitch_Left_Pos" joint="Joint_Elbow_Pitch_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Yaw_Left_Pos" joint="Joint_Wrist_Yaw_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Motor_Output_Front_Left_Pos" joint="Joint_Wrist_Motor_Output_Front_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Motor_Output_Back_Left_Pos" joint="Joint_Wrist_Motor_Output_Back_Left" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
 
-    <position name="Joint_Shoulder_Pitch_Right_Pos" joint="Joint_Shoulder_Pitch_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Shoulder_Roll_Right_Pos" joint="Joint_Shoulder_Roll_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Shoulder_Yaw_Right_Pos" joint="Joint_Shoulder_Yaw_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Elbow_Pitch_Right_Pos" joint="Joint_Elbow_Pitch_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Yaw_Right_Pos" joint="Joint_Wrist_Yaw_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Motor_Output_Front_Right_Pos" joint="Joint_Wrist_Motor_Output_Front_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Wrist_Motor_Output_Back_Right_Pos" joint="Joint_Wrist_Motor_Output_Back_Right" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Pitch_Right_Pos" joint="Joint_Shoulder_Pitch_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Roll_Right_Pos" joint="Joint_Shoulder_Roll_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Shoulder_Yaw_Right_Pos" joint="Joint_Shoulder_Yaw_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Elbow_Pitch_Right_Pos" joint="Joint_Elbow_Pitch_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Yaw_Right_Pos" joint="Joint_Wrist_Yaw_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Motor_Output_Front_Right_Pos" joint="Joint_Wrist_Motor_Output_Front_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Wrist_Motor_Output_Back_Right_Pos" joint="Joint_Wrist_Motor_Output_Back_Right" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
     
-    <position name="Joint_Neck_Yaw_Pos" joint="Joint_Neck_Yaw" class="actuator_7" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
-    <position name="Joint_Neck_Pitch_Pos" joint="Joint_Neck_Pitch" class="actuator_7" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Neck_Yaw_Pos" joint="Joint_Neck_Yaw" class="actuator_7" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="Joint_Neck_Pitch_Pos" joint="Joint_Neck_Pitch" class="actuator_7" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
 
     <!-- VELOCITY CONTROL -->
     <velocity name="Joint_Waist_Yaw_Vel" joint="Joint_Waist_Yaw" kv="0"  ctrlrange="-50 50"/>
