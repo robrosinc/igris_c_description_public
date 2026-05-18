@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<robot name="igris_c_v2_parallel_waist">
+  <!-- NOTE: (inverse joint order) In this model, the order of parallel joints are not the same with the full DoF model -->
+  <link name="base_link">
+    <inertial>
+      <mass value="8.124" />
+      <origin xyz="-0.0356 0.0 -0.09163" />
+      <inertia ixx="0.04342" ixy="0.00001" ixz="0.00325" iyy="0.05156" iyz="0.00000" izz="0.04212" />
+    </inertial>
+    <visual>
+      <origin xyz="-0.0115 0 -0.180"/>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Pelvis.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0115 0 -0.180"/>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Pelvis.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+ 
+  <link name="p_link_1">
+    <inertial>
+      <mass value="0.136" />
+      <origin xyz="0.00000 0.00000 0.03171" />
+      <inertia ixx="0.00005" ixy="0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00007" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Pitch.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Pitch.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="p_link_2">
+    <inertial>
+      <mass value="0.208" />
+      <origin xyz="-0.02403 0.00000 0.01673" />
+      <inertia ixx="0.00031" ixy="0.00000" ixz="0.00003" iyy="0.00031" iyz="0.00000" izz="0.00058" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Roll.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Roll.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="motor_1_output">
+    <inertial>
+      <mass value="0.043" />
+      <origin xyz="-0.01470 -0.00883 -0.00167" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Flange_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Flange_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="motor_2_output">
+    <inertial>
+      <mass value="0.043" />
+      <origin xyz="-0.01470 0.00883 -0.00167" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Flange_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Waist_Flange_Right.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link" />
+    <child link="p_link_1" />
+    <origin xyz="0 0 -0.04" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-0.872664626" upper="0.287979" effort="1000" velocity="100.0" />
+  </joint>
+ 
+  <joint name="joint_2" type="revolute">
+    <parent link="p_link_1" />
+    <child link="p_link_2" />
+    <origin xyz="0 0 0.04" rpy="0 0 0" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-0.31" upper="0.31" effort="1000" velocity="100.0" />
+  </joint>
+
+
+  <joint name="motor_1" type="revolute">
+    <parent link="base_link" />
+    <child link="motor_1_output" />
+    <origin xyz="0.0 0.09050 -0.04" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="-0.34906585" upper="0.872664626" effort="1000" velocity="100.0" />
+  </joint>
+
+
+  <joint name="motor_2" type="revolute">
+    <parent link="base_link" />
+    <child link="motor_2_output" />
+    <origin xyz="0.0 -0.09050 -0.04" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="-0.34906585" upper="0.872664626" effort="1000" velocity="100.0" />
+  </joint>
+
+</robot>

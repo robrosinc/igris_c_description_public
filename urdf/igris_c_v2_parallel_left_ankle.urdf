@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<robot name="igris_c_v2_parallel_left_ankle">
+  <link name="base_link">
+    <inertial>
+      <mass value="3.212" />
+      <origin xyz="0.00544 0.00096 0.2168" />
+      <inertia ixx="0.02686" ixy="0.00000" ixz="-0.00201" iyy="0.02845" iyz="-0.00048" izz="0.00520" />
+    </inertial>
+    <visual>
+      <origin xyz="-0.005 0 0.34"/>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Knee_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.005 0 0.34"/>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Knee_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="p_link_1">
+    <inertial>
+      <mass value="0.084" />
+      <origin xyz="0.00000 0.00000 0.00000" />
+      <inertia ixx="0.00003" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00003" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Pitch_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="p_link_2">
+    <inertial>
+      <mass value="0.459" />
+      <origin xyz="0.02167 0.00000 -0.05193" />
+      <inertia ixx="0.00045" ixy="0.00000" ixz="0.00024" iyy="0.00166" iyz="0.00000" izz="0.00158" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Roll_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Roll_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="motor_1_output">
+    <inertial>
+      <mass value="0.026" />
+      <origin xyz="-0.01128 -0.00742 -0.00003" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Flange_Out_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Flange_Out_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="motor_2_output">
+    <inertial>
+      <mass value="0.026" />
+      <origin xyz="-0.01128 0.00742 -0.00006" />
+      <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Flange_In_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7" />
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/Ankle_Flange_In_Left.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+
+  <joint name="joint_1" type="revolute">
+    <parent link="base_link" />
+    <child link="p_link_1" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="-0.698131701" upper="0.698131701" effort="1000" velocity="100.0" />
+  </joint>
+
+  <joint name="joint_2" type="revolute">
+    <parent link="p_link_1" />
+    <child link="p_link_2" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.261799388" upper="0.261799388" effort="1000" velocity="100.0" />
+  </joint>
+
+  <joint name="motor_1" type="revolute">
+    <parent link="base_link" />
+    <child link="motor_1_output" />
+    <origin xyz="0.0 0.03775 0.26000" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0" />
+  </joint>
+
+  <joint name="motor_2" type="revolute">
+    <parent link="base_link" />
+    <child link="motor_2_output" />
+    <origin xyz="0.0 -0.03775 0.152" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0" />
+  </joint>
+
+
+</robot>
