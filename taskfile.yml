@@ -1,0 +1,55 @@
+version: "3"
+
+tasks:
+  activate:
+    cmds:
+    - pixi shell --frozen -e dev
+    silent: true
+
+  fmt:
+    cmds:
+    - |
+      set -euo pipefail
+      pixi run --frozen cmake-format -i ./CMakeLists.txt
+      pixi run --frozen ruff format ./launch ./scripts
+      pixi run --frozen ruff check --select I --fix ./launch ./scripts
+
+      files=("./package.xml")
+      while IFS= read -r file; do
+        files+=("${file}")
+      done < <(find ./urdf ./mujoco -type f \( -name "*.xacro" -o -name "*.xml" \) | sort)
+
+      for file in "${files[@]}"; do
+        tmp="$(mktemp)"
+        pixi run --frozen xmllint --format "${file}" --output "${tmp}"
+        mv "${tmp}" "${file}"
+      done
+
+  check:
+    cmds:
+    - |
+      set -euo pipefail
+      pixi run --frozen cmake-format --check ./CMakeLists.txt
+      pixi run --frozen ruff format --check ./launch ./scripts
+      pixi run --frozen ruff check --select I ./launch ./scripts
+
+      failed=0
+      files=("./package.xml")
+      while IFS= read -r file; do
+        files+=("${file}")
+      done < <(find ./urdf ./mujoco -type f \( -name "*.xacro" -o -name "*.xml" \) | sort)
+
+      for file in "${files[@]}"; do
+        tmp="$(mktemp)"
+        pixi run --frozen xmllint --format "${file}" --output "${tmp}"
+        if ! cmp -s "${file}" "${tmp}"; then
+          echo "[xml-format] ${file}"
+          diff -u "${file}" "${tmp}" || true
+          failed=1
+        fi
+        rm -f "${tmp}"
+      done
+
+      if [ "${failed}" -ne 0 ]; then
+        exit 1
+      fi

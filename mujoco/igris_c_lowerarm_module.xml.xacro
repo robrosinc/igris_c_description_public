@@ -1,0 +1,424 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="igris_c_no_end_effector_block"/>
+  <xacro:macro name="igris_c_l_parallel_wrist_forearm_block">
+    <body name="l_wrist_motor_output_front" pos="0.004 0 -0.08450" quat="1 0 0 0">
+      <joint name="l_wrist_motor_output_front" type="hinge" ref="0.0" class="actuator_8" range="-0.98 0.75" limited="true" axis="1 0 0"/>
+      <inertial pos="-0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="l_wrist_motor_output_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_motor_output_front" class="visual"/>
+      <body name="l_wrist_coupler_front" pos="0.0 0.029961 -0.001522" quat="1 0 0 0">
+        <joint name="l_wrist_coupler_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="-0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="l_wrist_coupler_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_coupler_front" class="visual"/>
+      </body>
+    </body>
+    <body name="l_wrist_motor_output_back" pos="-0.004 0 -0.08450" quat="1 0 0 0">
+      <joint name="l_wrist_motor_output_back" type="hinge" ref="0.0" class="actuator_8" range="-0.98 0.75" limited="true" axis="1 0 0"/>
+      <inertial pos="0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="l_wrist_motor_output_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_motor_output_back" class="visual"/>
+      <body name="l_wrist_coupler_back" pos="0.0 0.029961 -0.001522" quat="1 0 0 0">
+        <joint name="l_wrist_coupler_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="l_wrist_coupler_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_coupler_back" class="visual"/>
+      </body>
+    </body>
+    <body name="l_wrist_flange_front" pos="0.02000 -0.009341 -0.21488" quat="1 0 0 0">
+      <joint name="l_wrist_flange_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+      <inertial pos="-0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="l_wrist_flange_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_flange_front" class="visual"/>
+    </body>
+    <body name="l_wrist_flange_back" pos="-0.02000 -0.009341 -0.21488" quat="1 0 0 0">
+      <joint name="l_wrist_flange_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+      <inertial pos="0.00357 0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="l_wrist_flange_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_flange_back" class="visual"/>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_l_parallel_wrist_connector_block">
+    <body name="l_wrist_universal_front" pos="0.01000 0.02150 -0.01000" quat="1 0 0 0">
+      <joint name="l_wrist_universal_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+      <inertial pos="0.00000 -0.00189 -0.00004" mass="0.005" fullinertia="0.000001 0.000001 0.000001 0 0 0"/>
+      <geom name="l_wrist_universal_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_universal_front" class="visual"/>
+      <body name="l_wrist_parallel_front" pos="0 0 0" quat="1 0 0 0">
+        <joint name="l_wrist_parallel_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="-0.00094 -0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="l_wrist_parallel_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_parallel_front" class="visual"/>
+      </body>
+    </body>
+    <body name="l_wrist_universal_back" pos="-0.01000 0.02150 -0.01000" quat="1 0 0 0">
+      <joint name="l_wrist_universal_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+      <inertial pos="0.00000 -0.00189 -0.00004" mass="0.002" fullinertia="0.00001 0.00001 0.00001 0.00000 0.00000 0.00000"/>
+      <geom name="l_wrist_universal_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_universal_back" class="visual"/>
+      <body name="l_wrist_parallel_back" pos="0 0 0" quat="1 0 0 0">
+        <joint name="l_wrist_parallel_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="0.00094 -0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="l_wrist_parallel_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_parallel_back" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_r_parallel_wrist_forearm_block">
+    <body name="r_wrist_motor_output_front" pos="0.004 0 -0.08450" quat="1 0 0 0">
+      <joint name="r_wrist_motor_output_front" type="hinge" ref="0.0" class="actuator_8" range="-0.75 0.98" limited="true" axis="1 0 0"/>
+      <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="r_wrist_motor_output_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_motor_output_front" class="visual"/>
+      <body name="r_wrist_coupler_front" pos="0.0 -0.029961 -0.001522" quat="1 0 0 0">
+        <joint name="r_wrist_coupler_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="r_wrist_coupler_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_coupler_front" class="visual"/>
+      </body>
+    </body>
+    <body name="r_wrist_motor_output_back" pos="-0.004 0 -0.08450" quat="1 0 0 0">
+      <joint name="r_wrist_motor_output_back" type="hinge" ref="0.0" class="actuator_8" range="-0.75 0.98" limited="true" axis="1 0 0"/>
+      <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="r_wrist_motor_output_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_motor_output_back" class="visual"/>
+      <body name="r_wrist_coupler_back" pos="0.0 -0.029961 -0.001522" quat="1 0 0 0">
+        <joint name="r_wrist_coupler_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="r_wrist_coupler_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_coupler_back" class="visual"/>
+      </body>
+    </body>
+    <body name="r_wrist_flange_front" pos="0.02000 0.009341 -0.21488" quat="1 0 0 0">
+      <joint name="r_wrist_flange_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+      <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="r_wrist_flange_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_front" class="visual"/>
+    </body>
+    <body name="r_wrist_flange_back" pos="-0.02000 0.009341 -0.21488" quat="1 0 0 0">
+      <joint name="r_wrist_flange_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+      <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+      <geom name="r_wrist_flange_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_back" class="visual"/>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_r_parallel_wrist_connector_block">
+    <body name="r_wrist_universal_front" pos="0.01000 -0.02150 -0.01000" quat="1 0 0 0">
+      <joint name="r_wrist_universal_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+      <inertial pos="0.00000 0.00189 -0.00004" mass="0.005" fullinertia="0.000001 0.000001 0.000001 0 0 0"/>
+      <geom name="r_wrist_universal_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_universal_front" class="visual"/>
+      <body name="r_wrist_parallel_front" pos="0 0 0" quat="1 0 0 0">
+        <joint name="r_wrist_parallel_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="-0.00094 0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="r_wrist_parallel_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_front" class="visual"/>
+      </body>
+    </body>
+    <body name="r_wrist_universal_back" pos="-0.01000 -0.02150 -0.01000" quat="1 0 0 0">
+      <joint name="r_wrist_universal_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+      <inertial pos="0.00000 0.00189 -0.00004" mass="0.002" fullinertia="0.00001 0.00001 0.00001 0.00000 0.00000 0.00000"/>
+      <geom name="r_wrist_universal_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_universal_back" class="visual"/>
+      <body name="r_wrist_parallel_back" pos="0 0 0" quat="1 0 0 0">
+        <joint name="r_wrist_parallel_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+        <inertial pos="0.00094 0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+        <geom name="r_wrist_parallel_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_back" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_l_hand_end_effector_block">
+    <body name="l_palm" pos="0 0.0109 -0.024" quat="0 1 0 0">
+      <inertial pos="0.00910 0.00371 0.07839" mass="0.333" fullinertia="0.00081 0.00117 0.00042 -0.00004 0.00012 0.00005"/>
+      <geom name="l_palm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_palm" class="collision"/>
+      <geom name="l_palm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_palm" class="visual"/>
+      <body name="l_thumb_proximal" pos="0.026 0.0132 0.0299" quat="0.999048 -0.043619 0 0">
+        <joint name="l_0_thumb_proximal" class="actuator_8" axis="0 0 1" range="0 1.727875959"/>
+        <inertial pos="0 0 0" mass="0.01" fullinertia="1e-5 1e-5 1e-5 0 0 0"/>
+        <geom name="l_thumb_proximal_collision" type="mesh" mesh="l_thumb_proximal" class="collision"/>
+        <geom name="l_thumb_proximal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_proximal"/>
+        <body name="l_thumb_middle" pos="0.0230 0.0036 0.015" quat="0.579228 -0.405580 0.405580 -0.579228">
+          <joint name="l_1_thumb_middle" class="actuator_8" axis="1 0 0" range="0 1.221730476"/>
+          <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+          <geom name="l_thumb_middle_collision" type="mesh" mesh="l_thumb_middle" class="collision"/>
+          <geom name="l_thumb_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_middle"/>
+          <body name="l_thumb_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+            <joint name="l_2_thumb_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+            <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+            <geom name="l_thumb_distal_collision" type="mesh" mesh="l_thumb_distal" class="collision"/>
+            <geom name="l_thumb_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_distal"/>
+          </body>
+        </body>
+      </body>
+      <body name="l_index_middle" pos="0.0305 -0.002 0.101" quat="0 0 0 1">
+        <joint name="l_3_index_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="l_index_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_index_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="l_index_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_4_index_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="l_index_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_index_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="l_middle_middle" pos="0.0085 -0.002 0.101" quat="0 0 0 1">
+        <joint name="l_5_middle_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="l_middle_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_middle_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="l_middle_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_6_middle_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="l_middle_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_middle_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="l_ring_middle" pos="-0.0139 -0.0010 0.0990" quat="0.017450 -0.017450 -0.000305 0.999695">
+        <joint name="l_7_ring_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="l_ring_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_ring_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="l_ring_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_8_ring_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="l_ring_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_ring_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="l_little_middle" pos="-0.0362 0.0012 0.0942" quat="0.026168 -0.043612 -0.000228 0.998706">
+        <joint name="l_9_little_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="l_little_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_little_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="l_little_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_10_little_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="l_little_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_little_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_l_magnet_end_effector_block">
+    <body name="l_magnet" pos="0 0 -0.024" quat="1 0 0 0">
+      <inertial pos="0.00000 -0.00986 -0.05139" mass="0.324" fullinertia="0.00016 0.00011 0.00014 0 0 0"/>
+      <geom name="l_magnet_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet" class="collision"/>
+      <geom name="l_magnet_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet" material="random" class="visual"/>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_l_1dof_gripper_end_effector_block">
+    <body name="l_1_dof_gripper_fixed" pos="0 0 -0.024" quat="1 0 0 0">
+      <inertial pos="0.00396 0.00377 -0.05310" mass="0.271" fullinertia="0.00033 0.00040 0.00021 -0.00001 -0.00003 -0.00004"/>
+      <geom name="l_1_dof_gripper_fixed_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_fixed" class="collision"/>
+      <geom name="l_1_dof_gripper_fixed_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_fixed" material="random" class="visual"/>
+      <body name="l_1_dof_gripper_moving" pos="0 0.02625 -0.04225" quat="1 0 0 0">
+        <joint name="l_1_dof_gripper_moving" type="hinge" ref="0.0" class="passive" range="0 1.74533" limited="true" axis="1 0 0"/>
+        <inertial pos="-0.00028 -0.00857 -0.04908" mass="0.093" fullinertia="0.00007 0.00009 0.00004 0.00000 0.00000 -0.00001"/>
+        <geom name="l_1_dof_gripper_moving_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_moving" class="collision"/>
+        <geom name="l_1_dof_gripper_moving_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_moving" material="random" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_r_hand_end_effector_block">
+    <body name="r_palm" pos="0 -0.0109 -0.024" quat="0 1 0 0">
+      <inertial pos="0.00910 -0.00371 0.07839" mass="0.333" fullinertia="0.00081 0.00117 0.00042 0.00004 0.00012 -0.00005"/>
+      <geom name="r_palm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_palm" class="collision"/>
+      <geom name="r_palm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_palm" class="visual"/>
+      <body name="r_thumb_proximal" pos="0.026 -0.0132 0.0299" quat="0.999048 0.043619 0 0">
+        <joint name="r_0_thumb_proximal" class="actuator_8" axis="0 0 1" range="-1.727875959 0"/>
+        <inertial pos="0 0 0" mass="0.01" fullinertia="1e-5 1e-5 1e-5 0 0 0"/>
+        <geom name="r_thumb_proximal_collision" type="mesh" mesh="r_thumb_proximal" class="collision"/>
+        <geom name="r_thumb_proximal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="r_thumb_proximal"/>
+        <body name="r_thumb_middle" pos="0.0230 -0.0035 0.015" quat="0.579228 -0.405580 0.405580 -0.579228">
+          <joint name="r_1_thumb_middle" class="actuator_8" axis="1 0 0" range="0 1.221730476"/>
+          <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+          <geom name="r_thumb_middle_collision" type="mesh" mesh="r_thumb_middle" class="collision"/>
+          <geom name="r_thumb_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="r_thumb_middle"/>
+          <body name="r_thumb_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+            <joint name="r_2_thumb_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+            <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+            <geom name="r_thumb_distal_collision" type="mesh" mesh="r_thumb_distal" class="collision"/>
+            <geom name="r_thumb_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="r_thumb_distal"/>
+          </body>
+        </body>
+      </body>
+      <body name="r_index_middle" pos="0.0305 0.002 0.101" quat="1 0 0 0">
+        <joint name="r_3_index_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="r_index_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="r_index_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="r_index_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="r_4_index_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="r_index_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="r_index_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="r_middle_middle" pos="0.0085 0.002 0.101" quat="1 0 0 0">
+        <joint name="r_5_middle_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="r_middle_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="r_middle_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="r_middle_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="r_6_middle_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="r_middle_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="r_middle_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="r_ring_middle" pos="-0.0139 0.0010 0.0990" quat="0.999695 -0.000305 -0.017450 0.017450">
+        <joint name="r_7_ring_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="r_ring_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="r_ring_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="r_ring_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="r_8_ring_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="r_ring_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="r_ring_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+      <body name="r_little_middle" pos="-0.0362 -0.0012 0.0942" quat="0.998706 -0.000228 -0.043612 0.026168">
+        <joint name="r_9_little_middle" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="0 0 0" mass="0.008" fullinertia="8e-6 8e-6 8e-6 0 0 0"/>
+        <geom name="r_little_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="r_little_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle"/>
+        <body name="r_little_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="r_10_little_distal" class="actuator_8" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="0 0 0" mass="0.006" fullinertia="6e-6 6e-6 6e-6 0 0 0"/>
+          <geom name="r_little_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="r_little_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal"/>
+        </body>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_r_magnet_end_effector_block">
+    <body name="r_magnet" pos="0 0 -0.024" quat="1 0 0 0">
+      <inertial pos="0.00000 0.00986 -0.05139" mass="0.324" fullinertia="0.00016 0.00011 0.00014 0 0 0"/>
+      <geom name="r_magnet_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_magnet" class="collision"/>
+      <geom name="r_magnet_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_magnet" material="random" class="visual"/>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_r_1dof_gripper_end_effector_block">
+    <body name="r_1_dof_gripper_fixed" pos="0 0 -0.024" quat="1 0 0 0">
+      <inertial pos="0.00396 -0.00377 -0.05310" mass="0.271" fullinertia="0.00033 0.00040 0.00021 -0.00001 -0.00003 -0.00004"/>
+      <geom name="r_1_dof_gripper_fixed_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_1_dof_gripper_fixed" class="collision"/>
+      <geom name="r_1_dof_gripper_fixed_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_1_dof_gripper_fixed" material="random" class="visual"/>
+      <body name="r_1_dof_gripper_moving" pos="0 -0.02625 -0.04225" quat="1 0 0 0">
+        <joint name="r_1_dof_gripper_moving" type="hinge" ref="0.0" class="passive" range="-1.74533 0" limited="true" axis="1 0 0"/>
+        <inertial pos="-0.00028 0.00857 -0.04908" mass="0.093" fullinertia="0.00007 0.00009 0.00004 0.00000 0.00000 -0.00001"/>
+        <geom name="r_1_dof_gripper_moving_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_1_dof_gripper_moving" class="collision"/>
+        <geom name="r_1_dof_gripper_moving_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_1_dof_gripper_moving" material="random" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_lowerarm_module" params="side parallel">
+    <xacro:if value="${side == 'left'}">
+      <body name="l_forearm" pos="-0.01 0 -0.05" quat="1 0 0 0">
+        <joint name="l_wrist_yaw" type="hinge" ref="0.0" class="actuator_8" range="-1.570796327 1.570796327" axis="0 0 1"/>
+        <joint name="l_wrist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 0 1"/>
+        <inertial pos="0.01024 -0.00369 -0.11953" mass="2.428" fullinertia="0.00919 0.00944 0.00179 0.00002 -0.00063 -0.00017"/>
+        <geom name="l_forearm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_forearm" class="collision"/>
+        <geom name="l_forearm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_forearm" class="visual"/>
+        <xacro:if value="${end_effector_value == 'hand'}">
+        </xacro:if>
+        <xacro:if value="${end_effector_value == 'dummy'}">
+          <geom name="l_hand_dummy_collision" pos="0 0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" density="0" class="collision"/>
+          <geom name="l_hand_dummy_visual" pos="0 0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" material="random" class="visual"/>
+        </xacro:if>
+        <xacro:if value="${parallel}">
+          <xacro:igris_c_l_parallel_wrist_forearm_block/>
+        </xacro:if>
+        <body name="l_wrist_rod" pos="0 -0.005 -0.2395" quat="1 0 0 0">
+          <xacro:if value="${parallel}">
+            <joint name="l_wrist_roll" type="hinge" ref="0.0" class="passive" range="-1.221730476 0.872664626" limited="true" axis="1 0 0"/>
+            <joint name="l_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          </xacro:if>
+          <xacro:unless value="${parallel}">
+            <joint name="l_wrist_roll" type="hinge" ref="0.0" class="actuator_8" range="-1.221730476 0.872664626" limited="true" axis="1 0 0"/>
+            <joint name="l_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          </xacro:unless>
+          <inertial pos="0 0.00604 0.00031" mass="0.012" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+          <geom name="l_wrist_rod_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_rod" class="visual"/>
+          <body name="l_wrist_connector" pos="0 0 0" quat="1 0 0 0">
+            <xacro:if value="${parallel}">
+              <joint name="l_wrist_pitch" type="hinge" ref="0.0" class="passive" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+              <joint name="l_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            </xacro:if>
+            <xacro:unless value="${parallel}">
+              <joint name="l_wrist_pitch" type="hinge" ref="0.0" class="actuator_8" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+              <joint name="l_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            </xacro:unless>
+            <inertial pos="0 0.01203 -0.02699" mass="0.032" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+            <geom name="l_wrist_connector_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_wrist_connector" class="visual"/>
+            <xacro:if value="${end_effector_value == 'hand' and not parallel}">
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'dummy'}">
+              <body name="l_hand_dummy" pos="0 0.0109 -0.024" quat="0 1 0 0">
+                <inertial pos="0.00910 0.00371 0.07839" mass="0.150" fullinertia="0.00081 0.00117 0.00042 -0.00004 0.00012 0.00005"/>
+              </body>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'none'}">
+              <xacro:igris_c_no_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'hand'}">
+              <xacro:igris_c_l_hand_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'magnet'}">
+              <xacro:igris_c_l_magnet_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == '1dof'}">
+              <xacro:igris_c_l_1dof_gripper_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${parallel}">
+              <xacro:igris_c_l_parallel_wrist_connector_block/>
+            </xacro:if>
+          </body>
+        </body>
+      </body>
+    </xacro:if>
+    <xacro:if value="${side == 'right'}">
+      <body name="r_forearm" pos="-0.01 0 -0.05" quat="1 0 0 0">
+        <joint name="r_wrist_yaw" type="hinge" ref="0.0" class="actuator_8" range="-1.570796327 1.570796327" axis="0 0 1"/>
+        <joint name="r_wrist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 0 1"/>
+        <inertial pos="0.01024 0.00369 -0.11953" mass="2.428" fullinertia="0.00919 0.00944 0.00179 -0.00002 -0.00063 0.00017"/>
+        <geom name="r_forearm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_forearm" class="collision"/>
+        <geom name="r_forearm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_forearm" class="visual"/>
+        <xacro:if value="${end_effector_value == 'dummy'}">
+          <geom name="r_hand_dummy_collision" pos="0 -0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" density="0" class="collision"/>
+          <geom name="r_hand_dummy_visual" pos="0 -0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" material="random" class="visual"/>
+        </xacro:if>
+        <xacro:if value="${parallel}">
+          <xacro:igris_c_r_parallel_wrist_forearm_block/>
+        </xacro:if>
+        <body name="r_wrist_rod" pos="0 0.005 -0.2395" quat="1 0 0 0">
+          <xacro:if value="${parallel}">
+            <joint name="r_wrist_roll" type="hinge" ref="0.0" class="passive" range="-0.872664626 1.221730476" limited="true" axis="1 0 0"/>
+            <joint name="r_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          </xacro:if>
+          <xacro:unless value="${parallel}">
+            <joint name="r_wrist_roll" type="hinge" ref="0.0" class="actuator_8" range="-0.872664626 1.221730476" limited="true" axis="1 0 0"/>
+            <joint name="r_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          </xacro:unless>
+          <inertial pos="0 -0.00604 0.00031" mass="0.012" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+          <geom name="r_wrist_rod_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_rod" class="visual"/>
+          <body name="r_wrist_connector" pos="0 0 0" quat="1 0 0 0">
+            <xacro:if value="${parallel}">
+              <joint name="r_wrist_pitch" type="hinge" ref="0.0" class="passive" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+              <joint name="r_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            </xacro:if>
+            <xacro:unless value="${parallel}">
+              <joint name="r_wrist_pitch" type="hinge" ref="0.0" class="actuator_8" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+              <joint name="r_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            </xacro:unless>
+            <inertial pos="0 -0.01203 -0.02699" mass="0.032" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+            <geom name="r_wrist_connector_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_connector" class="visual"/>
+            <xacro:if value="${end_effector_value == 'dummy'}">
+              <body name="r_hand_dummy" pos="0 -0.0109 -0.024" quat="0 1 0 0">
+                <inertial pos="0.00910 -0.00371 0.07839" mass="0.150" fullinertia="0.00081 0.00117 0.00042 0.00004 0.00012 -0.00005"/>
+              </body>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'none'}">
+              <xacro:igris_c_no_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'hand'}">
+              <xacro:igris_c_r_hand_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == 'magnet'}">
+              <xacro:igris_c_r_magnet_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${end_effector_value == '1dof'}">
+              <xacro:igris_c_r_1dof_gripper_end_effector_block/>
+            </xacro:if>
+            <xacro:if value="${parallel}">
+              <xacro:igris_c_r_parallel_wrist_connector_block/>
+            </xacro:if>
+          </body>
+        </body>
+      </body>
+    </xacro:if>
+  </xacro:macro>
+</mujoco>
