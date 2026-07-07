@@ -1,0 +1,12 @@
+line-length = 100
+indent-width = 4
+
+include = [
+    "launch/**/*.py",
+    "scripts/**/*.py",
+]
+
+exclude = [
+    "__init__.py",
+    ".cmake-format.py",
+]
