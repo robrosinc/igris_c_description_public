@@ -1,0 +1,362 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="igris_c_lowerarm_module">
+  <!-- Mesh path prefix for end-effector STL files (reused across all variants). -->
+  <xacro:property name="mesh_prefix" value="package://igris_c_description/meshes/igris_c_end_effector"/>
+  <xacro:property name="end_effector_value" value="$(arg end_effector)"/>
+  <xacro:macro name="igris_no_end_effector" params="side"/>
+  <xacro:macro name="igris_dummy_end_effector" params="side">
+    <link name="${'l_hand_dummy' if side == 'Left' else 'r_hand_dummy'}">
+      <inertial>
+        <xacro:if value="${side == 'Left'}">
+          <mass value="0.150"/>
+          <origin xyz="0.00910 0.00371 0.07839"/>
+          <inertia ixx="0.00081" ixy="-0.00004" ixz="0.00012" iyy="0.00117" iyz="0.00005" izz="0.00042"/>
+        </xacro:if>
+        <xacro:unless value="${side == 'Left'}">
+          <mass value="0.150"/>
+          <origin xyz="0.00910 -0.00371 0.07839"/>
+          <inertia ixx="0.00081" ixy="0.00004" ixz="0.00012" iyy="0.00117" iyz="-0.00005" izz="0.00042"/>
+        </xacro:unless>
+      </inertial>
+      <visual>
+        <origin xyz="${'0 0.005 0.0365' if side == 'Left' else '0 -0.005 0.0365'}" rpy="0 0 0"/>
+        <geometry>
+          <sphere radius="0.05"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="${'0 0.005 0.0365' if side == 'Left' else '0 -0.005 0.0365'}" rpy="0 0 0"/>
+        <geometry>
+          <sphere radius="0.05"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${'l_hand' if side == 'Left' else 'r_hand'}" type="fixed">
+      <parent link="${side == 'Left' and 'l_forearm' or 'r_forearm'}"/>
+      <child link="${'l_hand_dummy' if side == 'Left' else 'r_hand_dummy'}"/>
+      <xacro:if value="${side == 'Left'}">
+        <origin xyz="0 0.0059 -0.2635" rpy="3.14 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${side == 'Left'}">
+        <origin xyz="0 -0.0059 -0.2635" rpy="3.14 0 0"/>
+      </xacro:unless>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_magnet_end_effector" params="side">
+    <link name="${'l_magnet' if side == 'Left' else 'r_magnet'}">
+      <inertial>
+        <xacro:if value="${side == 'Left'}">
+          <mass value="0.324"/>
+          <origin xyz="0 -0.00986 -0.05139"/>
+          <inertia ixx="0.00016" ixy="-0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00014"/>
+        </xacro:if>
+        <xacro:unless value="${side == 'Left'}">
+          <mass value="0.324"/>
+          <origin xyz="0 0.00986 -0.05139"/>
+          <inertia ixx="0.00016" ixy="0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00014"/>
+        </xacro:unless>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/${'l_magnet_gripper' if side == 'Left' else 'r_magnet_gripper'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/${'l_magnet_gripper' if side == 'Left' else 'r_magnet_gripper'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${'l_magnet' if side == 'Left' else 'r_magnet'}" type="fixed">
+      <parent link="${'l_wrist_connector' if side == 'Left' else 'r_wrist_connector'}"/>
+      <child link="${'l_magnet' if side == 'Left' else 'r_magnet'}"/>
+      <origin xyz="0 0 -0.024" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_1dof_gripper_end_effector" params="side">
+    <link name="${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}">
+      <inertial>
+        <xacro:if value="${side == 'Left'}">
+          <mass value="0.271"/>
+          <origin xyz="0.00396 0.00377 -0.05310"/>
+          <inertia ixx="0.00033" ixy="-0.00001" ixz="-0.00003" iyy="0.00040" iyz="-0.00004" izz="0.00021"/>
+        </xacro:if>
+        <xacro:unless value="${side == 'Left'}">
+          <mass value="0.271"/>
+          <origin xyz="0.00396 -0.00377 -0.05310"/>
+          <inertia ixx="0.00033" ixy="0.00001" ixz="-0.00003" iyy="0.00040" iyz="0.00004" izz="0.00021"/>
+        </xacro:unless>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${'l_1_dof_gripper_moving' if side == 'Left' else 'r_1_dof_gripper_moving'}">
+      <inertial>
+        <xacro:if value="${side == 'Left'}">
+          <mass value="0.093"/>
+          <origin xyz="-0.00028 -0.00857 -0.04908"/>
+          <inertia ixx="0.00007" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="-0.00001" izz="0.00004"/>
+        </xacro:if>
+        <xacro:unless value="${side == 'Left'}">
+          <mass value="0.093"/>
+          <origin xyz="-0.00028 0.00857 -0.04908"/>
+          <inertia ixx="0.00007" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00001" izz="0.00004"/>
+        </xacro:unless>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/${'l_1_dof_gripper_moving' if side == 'Left' else 'r_1_dof_gripper_moving'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/${'l_1_dof_gripper_moving' if side == 'Left' else 'r_1_dof_gripper_moving'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}" type="fixed">
+      <parent link="${'l_wrist_connector' if side == 'Left' else 'r_wrist_connector'}"/>
+      <child link="${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}"/>
+      <origin xyz="0 0 -0.024" rpy="0 0 0"/>
+    </joint>
+    <joint name="${'l_1_dof_gripper_moving' if side == 'Left' else 'r_1_dof_gripper_moving'}" type="revolute">
+      <parent link="${'l_1_dof_gripper_fixed' if side == 'Left' else 'r_1_dof_gripper_fixed'}"/>
+      <child link="${'l_1_dof_gripper_moving' if side == 'Left' else 'r_1_dof_gripper_moving'}"/>
+      <xacro:if value="${side == 'Left'}">
+        <origin xyz="0 0.02625 -0.04225" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="0" upper="1.74533" effort="1000" velocity="100.0"/>
+      </xacro:if>
+      <xacro:unless value="${side == 'Left'}">
+        <origin xyz="0 -0.02625 -0.04225" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.74533" upper="0" effort="1000" velocity="100.0"/>
+      </xacro:unless>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_hand_end_effector" params="side">
+    <link name="${'l_palm' if side == 'Left' else 'r_palm'}">
+      <inertial>
+        <xacro:if value="${side == 'Left'}">
+          <mass value="0.200"/>
+          <origin xyz="0.00910 0.00371 0.07839"/>
+          <inertia ixx="0.00081" ixy="-0.00004" ixz="0.00012" iyy="0.00117" iyz="0.00005" izz="0.00042"/>
+        </xacro:if>
+        <xacro:unless value="${side == 'Left'}">
+          <mass value="0.200"/>
+          <origin xyz="0.00910 -0.00371 0.07839"/>
+          <inertia ixx="0.00081" ixy="0.00004" ixz="0.00012" iyy="0.00117" iyz="-0.00005" izz="0.00042"/>
+        </xacro:unless>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${'l_palm' if side == 'Left' else 'r_palm'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${'l_palm' if side == 'Left' else 'r_palm'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${'l_hand' if side == 'Left' else 'r_hand'}" type="fixed">
+      <parent link="${'l_wrist_connector' if side == 'Left' else 'r_wrist_connector'}"/>
+      <child link="${'l_palm' if side == 'Left' else 'r_palm'}"/>
+      <xacro:if value="${side == 'Left'}">
+        <origin xyz="0 0.0109 -0.024" rpy="3.14 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${side == 'Left'}">
+        <origin xyz="0 -0.0109 -0.024" rpy="3.14 0 0"/>
+      </xacro:unless>
+    </joint>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_palm' if side == 'Left' else 'r_palm'}" part="thumb_proximal" child="thumb_middle" joint_name="0_joint_thumb_proximal" xyz="${side == 'Left' and '0.026 0.0132 0.0299' or '0.026 -0.0132 0.0299'}" rpy="${side == 'Left' and '-0.087265666 0 0' or '0.087265666 0 0'}" axis="0 0 1" lower="${side == 'Left' and '0' or '-1.727875959'}" upper="${side == 'Left' and '1.727875959' or '0'}" mass="0.01" inertia="1e-5" mesh="${side == 'Left' and 'l_thumb_proximal' or 'r_thumb_proximal'}"/>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_thumb_proximal' if side == 'Left' else 'r_thumb_proximal'}" part="thumb_middle" child="thumb_distal" joint_name="1_joint_thumb_middle" xyz="${side == 'Left' and '0.0230 0.0036 0.015' or '0.0230 -0.0036 0.015'}" rpy="-1.221731311 0 -1.570796752" axis="1 0 0" lower="0" upper="1.221730476" mass="0.008" inertia="8e-6" mesh="${side == 'Left' and 'l_thumb_middle' or 'r_thumb_middle'}"/>
+    <xacro:igris_hand_finger_leaf side="${side}" parent="${'l_thumb_middle' if side == 'Left' else 'r_thumb_middle'}" part="thumb_distal" joint_name="2_joint_thumb_distal" xyz="0 -0.001 0.04" rpy="0 0 0" axis="1 0 0" lower="0" upper="1.570796327" mass="0.006" inertia="6e-6" mesh="${side == 'Left' and 'l_thumb_distal' or 'r_thumb_distal'}"/>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_palm' if side == 'Left' else 'r_palm'}" part="index_middle" child="index_distal" joint_name="3_joint_index_middle" xyz="${side == 'Left' and '0.0305 -0.002 0.101' or '0.0305 0.002 0.101'}" rpy="${side == 'Left' and '0 0 3.141592654' or '0 0 0'}" axis="1 0 0" lower="0" upper="1.570796327" mass="0.008" inertia="8e-6" mesh="finger_middle"/>
+    <xacro:igris_hand_finger_leaf side="${side}" parent="${'l_index_middle' if side == 'Left' else 'r_index_middle'}" part="index_distal" joint_name="4_joint_index_distal" xyz="0 -0.001 0.04" rpy="0 0 0" axis="1 0 0" lower="0" upper="1.570796327" mass="0.006" inertia="6e-6" mesh="finger_distal"/>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_palm' if side == 'Left' else 'r_palm'}" part="middle_middle" child="middle_distal" joint_name="5_joint_middle_middle" xyz="${side == 'Left' and '0.0085 -0.002 0.101' or '0.0085 0.002 0.101'}" rpy="${side == 'Left' and '0 0 3.141592654' or '0 0 0'}" axis="1 0 0" lower="0" upper="1.570796327" mass="0.008" inertia="8e-6" mesh="finger_middle"/>
+    <xacro:igris_hand_finger_leaf side="${side}" parent="${'l_middle_middle' if side == 'Left' else 'r_middle_middle'}" part="middle_distal" joint_name="6_joint_middle_distal" xyz="0 -0.001 0.04" rpy="0 0 0" axis="1 0 0" lower="0" upper="1.570796327" mass="0.006" inertia="6e-6" mesh="finger_distal"/>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_palm' if side == 'Left' else 'r_palm'}" part="ring_middle" child="ring_distal" joint_name="7_joint_ring_middle" xyz="${side == 'Left' and '-0.0135 -0.002 0.101' or '-0.0135 0.002 0.101'}" rpy="${side == 'Left' and '0 0 3.141592654' or '0 0 0'}" axis="1 0 0" lower="0" upper="1.570796327" mass="0.008" inertia="8e-6" mesh="finger_middle"/>
+    <xacro:igris_hand_finger_leaf side="${side}" parent="${'l_ring_middle' if side == 'Left' else 'r_ring_middle'}" part="ring_distal" joint_name="8_joint_ring_distal" xyz="0 -0.001 0.04" rpy="0 0 0" axis="1 0 0" lower="0" upper="1.570796327" mass="0.006" inertia="6e-6" mesh="finger_distal"/>
+    <xacro:igris_hand_finger_chain side="${side}" parent="${'l_palm' if side == 'Left' else 'r_palm'}" part="little_middle" child="little_distal" joint_name="9_joint_little_middle" xyz="${side == 'Left' and '-0.0355 -0.002 0.101' or '-0.0355 0.002 0.101'}" rpy="${side == 'Left' and '0 0 3.141592654' or '0 0 0'}" axis="1 0 0" lower="0" upper="1.570796327" mass="0.008" inertia="8e-6" mesh="finger_middle"/>
+    <xacro:igris_hand_finger_leaf side="${side}" parent="${'l_little_middle' if side == 'Left' else 'r_little_middle'}" part="little_distal" joint_name="10_joint_little_distal" xyz="0 -0.001 0.04" rpy="0 0 0" axis="1 0 0" lower="0" upper="1.570796327" mass="0.006" inertia="6e-6" mesh="finger_distal"/>
+  </xacro:macro>
+  <xacro:macro name="igris_hand_finger_chain" params="side parent part child joint_name xyz rpy axis lower upper mass inertia mesh">
+    <link name="${('l_' if side == 'Left' else 'r_') + part}">
+      <inertial>
+        <mass value="${mass}"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="${inertia}" ixy="0" ixz="0" iyy="${inertia}" iyz="0" izz="${inertia}"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${mesh}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${mesh}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${('l_' if side == 'Left' else 'r_') + joint_name}" type="revolute">
+      <parent link="${parent}"/>
+      <child link="${('l_' if side == 'Left' else 'r_') + part}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${lower}" upper="${upper}" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_hand_finger_leaf" params="side parent part joint_name xyz rpy axis lower upper mass inertia mesh">
+    <link name="${('l_' if side == 'Left' else 'r_') + part}">
+      <inertial>
+        <mass value="${mass}"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="${inertia}" ixy="0" ixz="0" iyy="${inertia}" iyz="0" izz="${inertia}"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${mesh}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/${mesh}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${('l_' if side == 'Left' else 'r_') + joint_name}" type="revolute">
+      <parent link="${parent}"/>
+      <child link="${('l_' if side == 'Left' else 'r_') + part}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${lower}" upper="${upper}" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_lowerarm_module" params="side parallel">
+    <link name="${side == 'Left' and 'l_forearm' or 'r_forearm'}">
+      <inertial>
+        <mass value="2.428"/>
+        <origin xyz="${side == 'Left' and '0.01024 -0.00369 -0.11953' or '0.01024 0.00369 -0.11953'}"/>
+        <inertia ixx="0.00919" ixy="${side == 'Left' and '0.00002' or '-0.00002'}" ixz="-0.00063" iyy="0.00944" iyz="${side == 'Left' and '-0.00017' or '0.00017'}" izz="0.00179"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_forearm' or 'r_forearm'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_forearm' or 'r_forearm'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${side == 'Left' and 'l_wrist_roll' or 'r_wrist_roll'}" type="revolute">
+      <parent link="${side == 'Left' and 'l_forearm' or 'r_forearm'}"/>
+      <child link="${side == 'Left' and 'l_wrist_rod' or 'r_wrist_rod'}"/>
+      <origin xyz="${side == 'Left' and '0 -0.005 -0.2395' or '0 0.005 -0.2395'}" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="${side == 'Left' and '-1.221730476' or '-0.872664626'}" upper="${side == 'Left' and '0.872664626' or '1.221730476'}" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="${side == 'Left' and 'l_wrist_rod' or 'r_wrist_rod'}">
+      <inertial>
+        <mass value="0.012"/>
+        <origin xyz="${side == 'Left' and '0.00000 0.00604 0.00031' or '0.00000 -0.00604 0.00031'}"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_wrist_rod' or 'r_wrist_rod'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_wrist_rod' or 'r_wrist_rod'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${side == 'Left' and 'l_wrist_pitch' or 'r_wrist_pitch'}" type="revolute">
+      <parent link="${side == 'Left' and 'l_wrist_rod' or 'r_wrist_rod'}"/>
+      <child link="${side == 'Left' and 'l_wrist_connector' or 'r_wrist_connector'}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-0.698131701" upper="0.698131701" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="${side == 'Left' and 'l_wrist_connector' or 'r_wrist_connector'}">
+      <inertial>
+        <mass value="0.032"/>
+        <origin xyz="${side == 'Left' and '0 0.01203 -0.02699' or '0 -0.01203 -0.02699'}"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_wrist_connector' or 'r_wrist_connector'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/${side == 'Left' and 'l_wrist_connector' or 'r_wrist_connector'}.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <xacro:if value="${parallel and side == 'Left'}">
+      <xacro:igris_parallel_left_wrist/>
+    </xacro:if>
+    <xacro:if value="${parallel and side == 'Right'}">
+      <xacro:igris_parallel_right_wrist/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'dummy'}">
+      <xacro:igris_dummy_end_effector side="${side}"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'none'}">
+      <xacro:igris_no_end_effector side="${side}"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'hand'}">
+      <xacro:igris_hand_end_effector side="${side}"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == '1dof'}">
+      <xacro:igris_1dof_gripper_end_effector side="${side}"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'magnet'}">
+      <xacro:igris_magnet_end_effector side="${side}"/>
+    </xacro:if>
+  </xacro:macro>
+</robot>
