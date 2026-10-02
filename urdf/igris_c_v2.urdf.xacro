@@ -1,0 +1,2195 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="igris_c_v2">
+  <!-- ===================== 1. Parameters (xacro args) ===================== -->
+  <xacro:arg name="base_type" default="torso"/>
+  <xacro:arg name="parallel" default="false"/>
+  <xacro:arg name="end_effector" default="dummy"/>
+  <xacro:arg name="ankle_version" default="v1"/>
+  <xacro:arg name="wrist_version" default="v1"/>
+  <!-- ===================== 2. Constants (xacro properties) ===================== -->
+  <xacro:property name="random_rgba" value="0.0706 0.0706 0.0706 0.7"/>
+  <xacro:property name="base_type_value" value="$(arg base_type)"/>
+  <xacro:property name="parallel_enabled" value="${str('$(arg parallel)').lower() == 'true'}"/>
+  <!-- ankle_version: v1 = original foot, v2 = reinforced foot (heavier, shifted COM, new PLA anchors). -->
+  <xacro:property name="ankle_version_value" value="$(arg ankle_version)"/>
+  <!-- wrist_version: v1 = intersecting roll/pitch axes with a universal+revolute rod pair.
+       v2 = offset roll/pitch axes; MJCF closes the rod with a ball joint, which URDF has no type
+       for, so it is decomposed into three revolutes through two zero-mass gimbal links. -->
+  <xacro:property name="wrist_version_value" value="$(arg wrist_version)"/>
+  <!-- ===================== 3. Reusable macro definitions ===================== -->
+  <xacro:macro name="igris_parallel_waist">
+    <link name="dummy_1_x"/>
+    <link name="dummy_1_y"/>
+    <link name="dummy_2_x"/>
+    <link name="dummy_2_y"/>
+    <link name="l_waist_flange">
+      <inertial>
+        <mass value="0.043"/>
+        <origin xyz="-0.01470 -0.00883 -0.00167"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="l_waist_parallel">
+      <inertial>
+        <mass value="0.030"/>
+        <origin xyz="0.00083 0.00172 0.02995"/>
+        <inertia ixx="0.00002" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_waist_flange">
+      <inertial>
+        <mass value="0.043"/>
+        <origin xyz="-0.01470 0.00883 -0.00167"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_waist_parallel">
+      <inertial>
+        <mass value="0.030"/>
+        <origin xyz="0.00083 -0.00172 0.02995"/>
+        <inertia ixx="0.00002" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="l_waist_flange" type="revolute">
+      <parent link="pelvis"/>
+      <child link="l_waist_flange"/>
+      <origin xyz="0 0.09050 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_x" type="revolute">
+      <parent link="l_waist_flange"/>
+      <child link="dummy_1_x"/>
+      <origin xyz="-0.05167 0.00000 -0.00587" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_y" type="revolute">
+      <parent link="dummy_1_x"/>
+      <child link="dummy_1_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_z" type="revolute">
+      <parent link="dummy_1_y"/>
+      <child link="l_waist_parallel"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_flange" type="revolute">
+      <parent link="pelvis"/>
+      <child link="r_waist_flange"/>
+      <origin xyz="0 -0.09050 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_x" type="revolute">
+      <parent link="r_waist_flange"/>
+      <child link="dummy_2_x"/>
+      <origin xyz="-0.05167 0.00000 -0.00587" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_y" type="revolute">
+      <parent link="dummy_2_x"/>
+      <child link="dummy_2_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_z" type="revolute">
+      <parent link="dummy_2_y"/>
+      <child link="r_waist_parallel"/>
+      <origin xyz="0 0 0 " rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_parallel_left_ankle">
+    <link name="dummy_3_x"/>
+    <link name="dummy_3_y"/>
+    <link name="dummy_4_x"/>
+    <link name="dummy_4_y"/>
+    <link name="l_ankle_flange_out">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 -0.00742 -0.00003"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="l_ankle_parallel_out">
+      <inertial>
+        <mass value="0.130"/>
+        <origin xyz="0.00183 -0.00357 -0.13606"/>
+        <inertia ixx="0.00092" ixy="0.00000" ixz="0.000001" iyy="0.00092" iyz="-0.00002" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="l_ankle_flange_in">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 0.00742 -0.00006"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="l_ankle_parallel_in">
+      <inertial>
+        <mass value="0.083"/>
+        <origin xyz="0.00187 0.00365 -0.08089"/>
+        <inertia ixx="0.00022" ixy="0.00000" ixz="0.0000" iyy="0.00022" iyz="0.00001" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="l_ankle_flange_in" type="revolute">
+      <parent link="l_lower_leg"/>
+      <child link="l_ankle_flange_in"/>
+      <origin xyz="0.00500 -0.03775 -0.18800" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_in_x" type="revolute">
+      <parent link="l_ankle_flange_in"/>
+      <child link="dummy_3_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00019" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_in_y" type="revolute">
+      <parent link="dummy_3_x"/>
+      <child link="dummy_3_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_in_z" type="revolute">
+      <parent link="dummy_3_y"/>
+      <child link="l_ankle_parallel_in"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_flange_out" type="revolute">
+      <parent link="l_lower_leg"/>
+      <child link="l_ankle_flange_out"/>
+      <origin xyz="0.00500 0.03775 -0.08000" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_out_x" type="revolute">
+      <parent link="l_ankle_flange_out"/>
+      <child link="dummy_4_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00001" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_out_y" type="revolute">
+      <parent link="dummy_4_x"/>
+      <child link="dummy_4_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_ankle_parallel_out_z" type="revolute">
+      <parent link="dummy_4_y"/>
+      <child link="l_ankle_parallel_out"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_parallel_right_ankle">
+    <link name="dummy_5_x"/>
+    <link name="dummy_5_y"/>
+    <link name="dummy_6_x"/>
+    <link name="dummy_6_y"/>
+    <link name="r_ankle_flange_out">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 0.00742 -0.00003"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_parallel_out">
+      <inertial>
+        <mass value="0.130"/>
+        <origin xyz="0.00183 0.00357 -0.13606"/>
+        <inertia ixx="0.00092" ixy="0.00000" ixz="0.000001" iyy="0.00092" iyz="0.00002" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_flange_in">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 -0.00742 -0.00006"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_parallel_in">
+      <inertial>
+        <mass value="0.083"/>
+        <origin xyz="0.00187 -0.00365 -0.08089"/>
+        <inertia ixx="0.00022" ixy="0.00000" ixz="0.0000" iyy="0.00022" iyz="-0.00001" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_ankle_flange_in" type="revolute">
+      <parent link="r_lower_leg"/>
+      <child link="r_ankle_flange_in"/>
+      <origin xyz="0.00500 0.03775 -0.18800" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_x" type="revolute">
+      <parent link="r_ankle_flange_in"/>
+      <child link="dummy_5_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00019" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_y" type="revolute">
+      <parent link="dummy_5_x"/>
+      <child link="dummy_5_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_z" type="revolute">
+      <parent link="dummy_5_y"/>
+      <child link="r_ankle_parallel_in"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_flange_out" type="revolute">
+      <parent link="r_lower_leg"/>
+      <child link="r_ankle_flange_out"/>
+      <origin xyz="0.00500 -0.03775 -0.08000" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_x" type="revolute">
+      <parent link="r_ankle_flange_out"/>
+      <child link="dummy_6_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00001" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_y" type="revolute">
+      <parent link="dummy_6_x"/>
+      <child link="dummy_6_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_z" type="revolute">
+      <parent link="dummy_6_y"/>
+      <child link="r_ankle_parallel_out"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:macro name="igris_parallel_left_wrist">
+    <xacro:if value="${wrist_version_value == 'v2'}">
+      <link name="l_wrist_connector_front">
+        <inertial>
+          <mass value="0.01031"/>
+          <origin xyz="-0.012246 0.013095 -0.002074"/>
+          <inertia ixx="1.546284e-06" ixy="6.21838e-07" ixz="-9.8489e-08" iyy="5.42679e-07" iyz="1.98741e-07" izz="1.766002e-06"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_connector_back">
+        <inertial>
+          <mass value="0.01031"/>
+          <origin xyz="0.012246 0.013095 -0.002074"/>
+          <inertia ixx="1.546284e-06" ixy="-6.21838e-07" ixz="9.8489e-08" iyy="5.42679e-07" iyz="1.98741e-07" izz="1.766002e-06"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_parallel_front_ry">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="l_wrist_parallel_front_rx">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="l_wrist_parallel_front">
+        <inertial>
+          <mass value="0.013631"/>
+          <origin xyz="0.00135 0.010135 0.022592"/>
+          <inertia ixx="4.968614e-06" ixy="-6.6531e-08" ixz="3.36696e-07" iyy="4.480709e-06" iyz="-6.1995e-07" izz="7.91828e-07"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_parallel_back_ry">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="l_wrist_parallel_back_rx">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="l_wrist_parallel_back">
+        <inertial>
+          <mass value="0.013631"/>
+          <origin xyz="-0.00135 0.010135 0.022592"/>
+          <inertia ixx="4.968614e-06" ixy="6.6531e-08" ixz="-3.36696e-07" iyy="4.480709e-06" iyz="-6.1995e-07" izz="7.91828e-07"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <joint name="l_wrist_connector_front" type="revolute">
+        <parent link="l_forearm"/>
+        <child link="l_wrist_connector_front"/>
+        <origin xyz="0.029 -0.009341 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_connector_back" type="revolute">
+        <parent link="l_forearm"/>
+        <child link="l_wrist_connector_back"/>
+        <origin xyz="-0.029 -0.009341 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <!-- MJCF closes this with one ball joint; URDF has no ball type, so it is decomposed
+           into three revolutes through two zero-mass gimbal links. -->
+      <joint name="l_wrist_parallel_front_ry" type="revolute">
+        <parent link="l_wrist_mount"/>
+        <child link="l_wrist_parallel_front_ry"/>
+        <origin xyz="0.021 0.02025 -0.01675" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_front_rx" type="revolute">
+        <parent link="l_wrist_parallel_front_ry"/>
+        <child link="l_wrist_parallel_front_rx"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_front" type="revolute">
+        <parent link="l_wrist_parallel_front_rx"/>
+        <child link="l_wrist_parallel_front"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <!-- MJCF closes this with one ball joint; URDF has no ball type, so it is decomposed
+           into three revolutes through two zero-mass gimbal links. -->
+      <joint name="l_wrist_parallel_back_ry" type="revolute">
+        <parent link="l_wrist_mount"/>
+        <child link="l_wrist_parallel_back_ry"/>
+        <origin xyz="-0.021 0.02025 -0.01675" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_back_rx" type="revolute">
+        <parent link="l_wrist_parallel_back_ry"/>
+        <child link="l_wrist_parallel_back_rx"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_back" type="revolute">
+        <parent link="l_wrist_parallel_back_rx"/>
+        <child link="l_wrist_parallel_back"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+    </xacro:if>
+    <xacro:unless value="${wrist_version_value == 'v2'}">
+      <link name="l_wrist_connector_front">
+        <inertial>
+          <mass value="0.009"/>
+          <origin xyz="-0.00357 0.01879 0.00461"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_connector_back">
+        <inertial>
+          <mass value="0.009"/>
+          <origin xyz="0.00357 0.01879 0.00461"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_universal_front">
+        <inertial>
+          <mass value="0.005"/>
+          <origin xyz="0.00000 -0.00189 -0.00004"/>
+          <inertia ixx="0.000001" ixy="0.00000" ixz="0.00000" iyy="0.000001" iyz="0.00000" izz="0.000001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_parallel_front">
+        <inertial>
+          <mass value="0.017"/>
+          <origin xyz="-0.00094 -0.00038 -0.01026"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_universal_back">
+        <inertial>
+          <mass value="0.002"/>
+          <origin xyz="0.00000 -0.00189 -0.00004"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="l_wrist_parallel_back">
+        <inertial>
+          <mass value="0.017"/>
+          <origin xyz="0.00094 -0.00038 -0.01026"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <joint name="l_wrist_connector_front" type="revolute">
+        <parent link="l_forearm"/>
+        <child link="l_wrist_connector_front"/>
+        <origin xyz="0.02000 -0.00934 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_connector_back" type="revolute">
+        <parent link="l_forearm"/>
+        <child link="l_wrist_connector_back"/>
+        <origin xyz="-0.02000 -0.00934 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_universal_front" type="revolute">
+        <parent link="l_wrist_mount"/>
+        <child link="l_wrist_universal_front"/>
+        <origin xyz="0.01000 0.02150 -0.01000" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_front" type="revolute">
+        <parent link="l_wrist_universal_front"/>
+        <child link="l_wrist_parallel_front"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_universal_back" type="revolute">
+        <parent link="l_wrist_mount"/>
+        <child link="l_wrist_universal_back"/>
+        <origin xyz="-0.01000 0.02150 -0.01000" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="l_wrist_parallel_back" type="revolute">
+        <parent link="l_wrist_universal_back"/>
+        <child link="l_wrist_parallel_back"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+    </xacro:unless>
+  </xacro:macro>
+  <xacro:macro name="igris_parallel_right_wrist">
+    <xacro:if value="${wrist_version_value == 'v2'}">
+      <link name="r_wrist_connector_front">
+        <inertial>
+          <mass value="0.01031"/>
+          <origin xyz="-0.012246 -0.013095 -0.002074"/>
+          <inertia ixx="1.546284e-06" ixy="-6.21838e-07" ixz="-9.8489e-08" iyy="5.42679e-07" iyz="-1.98741e-07" izz="1.766002e-06"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_connector_back">
+        <inertial>
+          <mass value="0.01031"/>
+          <origin xyz="0.012246 -0.013095 -0.002074"/>
+          <inertia ixx="1.546284e-06" ixy="6.21838e-07" ixz="9.8489e-08" iyy="5.42679e-07" iyz="-1.98741e-07" izz="1.766002e-06"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_parallel_front_ry">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="r_wrist_parallel_front_rx">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="r_wrist_parallel_front">
+        <inertial>
+          <mass value="0.013631"/>
+          <origin xyz="0.00135 -0.010135 0.022592"/>
+          <inertia ixx="4.968614e-06" ixy="6.6531e-08" ixz="3.36696e-07" iyy="4.480709e-06" iyz="6.1995e-07" izz="7.91828e-07"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_parallel_back_ry">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="r_wrist_parallel_back_rx">
+        <inertial>
+          <mass value="0"/>
+          <origin xyz="0 0 0"/>
+          <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+      </link>
+      <link name="r_wrist_parallel_back">
+        <inertial>
+          <mass value="0.013631"/>
+          <origin xyz="-0.00135 -0.010135 0.022592"/>
+          <inertia ixx="4.968614e-06" ixy="-6.6531e-08" ixz="-3.36696e-07" iyy="4.480709e-06" iyz="6.1995e-07" izz="7.91828e-07"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="${random_rgba}"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <joint name="r_wrist_connector_front" type="revolute">
+        <parent link="r_forearm"/>
+        <child link="r_wrist_connector_front"/>
+        <origin xyz="0.029 0.009341 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_connector_back" type="revolute">
+        <parent link="r_forearm"/>
+        <child link="r_wrist_connector_back"/>
+        <origin xyz="-0.029 0.009341 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <!-- MJCF closes this with one ball joint; URDF has no ball type, so it is decomposed
+           into three revolutes through two zero-mass gimbal links. -->
+      <joint name="r_wrist_parallel_front_ry" type="revolute">
+        <parent link="r_wrist_mount"/>
+        <child link="r_wrist_parallel_front_ry"/>
+        <origin xyz="0.021 -0.02025 -0.01675" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_front_rx" type="revolute">
+        <parent link="r_wrist_parallel_front_ry"/>
+        <child link="r_wrist_parallel_front_rx"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_front" type="revolute">
+        <parent link="r_wrist_parallel_front_rx"/>
+        <child link="r_wrist_parallel_front"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <!-- MJCF closes this with one ball joint; URDF has no ball type, so it is decomposed
+           into three revolutes through two zero-mass gimbal links. -->
+      <joint name="r_wrist_parallel_back_ry" type="revolute">
+        <parent link="r_wrist_mount"/>
+        <child link="r_wrist_parallel_back_ry"/>
+        <origin xyz="-0.021 -0.02025 -0.01675" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_back_rx" type="revolute">
+        <parent link="r_wrist_parallel_back_ry"/>
+        <child link="r_wrist_parallel_back_rx"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_back" type="revolute">
+        <parent link="r_wrist_parallel_back_rx"/>
+        <child link="r_wrist_parallel_back"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+    </xacro:if>
+    <xacro:unless value="${wrist_version_value == 'v2'}">
+      <link name="r_wrist_connector_front">
+        <inertial>
+          <mass value="0.009"/>
+          <origin xyz="-0.00357 -0.01879 0.00461"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_connector_back">
+        <inertial>
+          <mass value="0.009"/>
+          <origin xyz="0.00357 -0.01879 0.00461"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_universal_front">
+        <inertial>
+          <mass value="0.005"/>
+          <origin xyz="0.00000 0.00189 -0.00004"/>
+          <inertia ixx="0.000001" ixy="0.00000" ixz="0.00000" iyy="0.000001" iyz="0.00000" izz="0.000001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_parallel_front">
+        <inertial>
+          <mass value="0.017"/>
+          <origin xyz="-0.00094 0.00038 -0.01026"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_universal_back">
+        <inertial>
+          <mass value="0.002"/>
+          <origin xyz="0.00000 0.00189 -0.00004"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <link name="r_wrist_parallel_back">
+        <inertial>
+          <mass value="0.017"/>
+          <origin xyz="0.00094 0.00038 -0.01026"/>
+          <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00001" iyz="0.00000" izz="0.00001"/>
+        </inertial>
+        <visual>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+          <material name="random">
+            <color rgba="0.0706 0.0706 0.0706 0.7"/>
+          </material>
+        </visual>
+        <collision>
+          <geometry>
+            <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+          </geometry>
+        </collision>
+      </link>
+      <joint name="r_wrist_connector_front" type="revolute">
+        <parent link="r_forearm"/>
+        <child link="r_wrist_connector_front"/>
+        <origin xyz="0.02000 0.00934 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_connector_back" type="revolute">
+        <parent link="r_forearm"/>
+        <child link="r_wrist_connector_back"/>
+        <origin xyz="-0.02000 0.00934 -0.21488" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_universal_front" type="revolute">
+        <parent link="r_wrist_mount"/>
+        <child link="r_wrist_universal_front"/>
+        <origin xyz="0.01000 -0.02150 -0.01000" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_front" type="revolute">
+        <parent link="r_wrist_universal_front"/>
+        <child link="r_wrist_parallel_front"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_universal_back" type="revolute">
+        <parent link="r_wrist_mount"/>
+        <child link="r_wrist_universal_back"/>
+        <origin xyz="-0.01000 -0.02150 -0.01000" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+      <joint name="r_wrist_parallel_back" type="revolute">
+        <parent link="r_wrist_universal_back"/>
+        <child link="r_wrist_parallel_back"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+      </joint>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- ===================== 4. Robot assembly (torso / pelvis base) ===================== -->
+  <xacro:macro name="igris_c_torso_base_block">
+    <!-- base_link -> torso -> waist chain -> pelvis -->
+    <link name="base_link"/>
+    <joint name="base_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="torso"/>
+    </joint>
+    <link name="torso">
+      <inertial>
+        <mass value="12.974"/>
+        <origin xyz="0.00175 0.00112 0.15154"/>
+        <inertia ixx="0.15110" ixy="-0.00136" ixz="0.00843" iyy="0.12880" iyz="-0.00089" izz="0.08070"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/torso.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/torso.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_yaw" type="revolute">
+      <parent link="torso"/>
+      <child link="waist_frame"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="waist_frame">
+      <inertial>
+        <mass value="0.208"/>
+        <origin xyz="0.02597 0.00000 -0.00927"/>
+        <inertia ixx="0.00031" ixy="0.00000" ixz="0.00003" iyy="0.00031" iyz="0.00000" izz="0.00058"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_frame.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_frame.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_roll" type="revolute">
+      <parent link="waist_frame"/>
+      <child link="waist_follower"/>
+      <origin xyz="0.05 0 -0.026" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.314159265" upper="0.314159265" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="waist_follower">
+      <inertial>
+        <mass value="0.136"/>
+        <origin xyz="0.00000 0.00000 -0.00829"/>
+        <inertia ixx="0.00005" ixy="0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00007"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_follower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_follower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_pitch" type="revolute">
+      <parent link="waist_follower"/>
+      <child link="pelvis"/>
+      <origin xyz="0 0 -0.04" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-0.872664626" upper="0.287979327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="pelvis">
+      <inertial>
+        <mass value="8.124"/>
+        <origin xyz="-0.04960 0.0 -0.05163"/>
+        <inertia ixx="0.04342" ixy="0.00001" ixz="0.00325" iyy="0.05156" iyz="0.00000" izz="0.04212"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_upper_front.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_upper_back.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_lower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <xacro:if value="${parallel_enabled}">
+      <xacro:igris_parallel_waist/>
+    </xacro:if>
+  </xacro:macro>
+  <xacro:macro name="igris_c_pelvis_base_block">
+    <!-- base_link -> pelvis -> waist chain -> torso -->
+    <link name="base_link"/>
+    <joint name="base_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="pelvis"/>
+    </joint>
+    <link name="pelvis">
+      <inertial>
+        <mass value="8.124"/>
+        <origin xyz="-0.04960 0.0 -0.05163"/>
+        <inertia ixx="0.04342" ixy="0.00001" ixz="0.00325" iyy="0.05156" iyz="0.00000" izz="0.04212"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_upper_front.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_upper_back.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/pelvis_lower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_pitch" type="revolute">
+      <parent link="pelvis"/>
+      <child link="waist_follower"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <limit lower="-0.872664626" upper="0.287979327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="waist_follower">
+      <inertial>
+        <mass value="0.136"/>
+        <origin xyz="0.00000 0.00000 -0.00829"/>
+        <inertia ixx="0.00005" ixy="0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00007"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0.04" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_follower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.04" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_follower.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_roll" type="revolute">
+      <parent link="waist_follower"/>
+      <child link="waist_frame"/>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <axis xyz="-1 0 0"/>
+      <limit lower="-0.314159265" upper="0.314159265" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="waist_frame">
+      <inertial>
+        <mass value="0.208"/>
+        <origin xyz="0.02597 0.00000 -0.00927"/>
+        <inertia ixx="0.00031" ixy="0.00000" ixz="0.00003" iyy="0.00031" iyz="0.00000" izz="0.00058"/>
+      </inertial>
+      <visual>
+        <origin xyz="-0.05 0 0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_frame.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="-0.05 0 0.026" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/waist_frame.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="waist_yaw" type="revolute">
+      <parent link="waist_frame"/>
+      <child link="torso"/>
+      <origin xyz="-0.05 0 0.026" rpy="0 0 0"/>
+      <axis xyz="0 0 -1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="torso">
+      <inertial>
+        <mass value="12.974"/>
+        <origin xyz="0.00175 0.00112 0.15154"/>
+        <inertia ixx="0.15110" ixy="-0.00136" ixz="0.00843" iyy="0.12880" iyz="-0.00089" izz="0.08070"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/torso.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/torso.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <xacro:if value="${parallel_enabled}">
+      <xacro:igris_parallel_waist/>
+    </xacro:if>
+  </xacro:macro>
+  <xacro:include filename="igris_c_lowerarm_module.urdf.xacro"/>
+  <xacro:if value="${base_type_value == 'torso'}">
+    <xacro:igris_c_torso_base_block/>
+  </xacro:if>
+  <xacro:if value="${base_type_value == 'pelvis'}">
+    <xacro:igris_c_pelvis_base_block/>
+  </xacro:if>
+  <!-- ===================== Left leg chain ===================== -->
+  <joint name="l_hip_pitch" type="revolute">
+    <parent link="pelvis"/>
+    <child link="l_hip_frame"/>
+    <origin xyz="-0.0115 0.0897 -0.14" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.059488517" upper="0.523598776" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_hip_frame">
+    <inertial>
+      <mass value="1.894"/>
+      <origin xyz="0.00973 -0.00102 0.00002"/>
+      <inertia ixx="0.00261" ixy="-0.00001" ixz="0.00000" iyy="0.00267" iyz="0.00000" izz="0.00258"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_hip_roll" type="revolute">
+    <parent link="l_hip_frame"/>
+    <child link="l_hip_bracket"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.331612558" upper="2.35619449" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_hip_bracket">
+    <inertial>
+      <mass value="0.573"/>
+      <origin xyz="-0.01497 0.00570 -0.03564"/>
+      <inertia ixx="0.00103" ixy="-0.00006" ixz="0.00012" iyy="0.00226" iyz="0.00006" izz="0.00206"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_hip_yaw" type="revolute">
+    <parent link="l_hip_bracket"/>
+    <child link="l_upper_leg"/>
+    <origin xyz="0.002 0 -0.076" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_upper_leg">
+    <inertial>
+      <mass value="4.813"/>
+      <origin xyz="-0.01286 -0.00388 -0.10563"/>
+      <inertia ixx="0.03161" ixy="-0.00007" ixz="-0.00101" iyy="0.03396" iyz="-0.00084" izz="0.01135"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_knee_pitch" type="revolute">
+    <parent link="l_upper_leg"/>
+    <child link="l_lower_leg"/>
+    <origin xyz="-0.055 0 -0.263" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.28638132" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_lower_leg">
+    <inertial>
+      <mass value="3.212"/>
+      <origin xyz="0.01044 0.00096 -0.12320"/>
+      <inertia ixx="0.02686" ixy="0.00000" ixz="-0.00201" iyy="0.02845" iyz="-0.00048" izz="0.00520"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_ankle_pitch" type="revolute">
+    <parent link="l_lower_leg"/>
+    <child link="l_ankle_frame"/>
+    <origin xyz="0.005 0 -0.34" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.698131701" upper="0.698131701" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_ankle_frame">
+    <inertial>
+      <mass value="0.084"/>
+      <origin xyz="0.00000 0.00000 0.00000"/>
+      <inertia ixx="0.00003" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00003"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <xacro:unless value="${ankle_version_value == 'v2'}">
+    <joint name="l_ankle_roll" type="revolute">
+      <parent link="l_ankle_frame"/>
+      <child link="l_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="l_foot">
+      <inertial>
+        <mass value="0.579"/>
+        <origin xyz="0.02167 0.00000 -0.05193"/>
+        <inertia ixx="0.00045" ixy="0.00000" ixz="0.00024" iyy="0.00166" iyz="0.00000" izz="0.00158"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:unless>
+  <xacro:if value="${ankle_version_value == 'v2'}">
+    <joint name="l_ankle_roll" type="revolute">
+      <parent link="l_ankle_frame"/>
+      <child link="l_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="l_foot">
+      <inertial>
+        <mass value="0.634"/>
+        <origin xyz="0.01282 0.00000 -0.04623"/>
+        <inertia ixx="0.00073" ixy="0.00000" ixz="0.00047" iyy="0.00256" iyz="0.00000" izz="0.00244"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:if>
+  <xacro:if value="${parallel_enabled}">
+    <xacro:igris_parallel_left_ankle/>
+  </xacro:if>
+  <!-- ===================== Right leg chain ===================== -->
+  <joint name="r_hip_pitch" type="revolute">
+    <parent link="pelvis"/>
+    <child link="r_hip_frame"/>
+    <origin xyz="-0.0115 -0.0897 -0.14" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.059488517" upper="0.523598776" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_hip_frame">
+    <inertial>
+      <mass value="1.894"/>
+      <origin xyz="0.00973 0.00102 0.00002"/>
+      <inertia ixx="0.00261" ixy="0.00001" ixz="0.00000" iyy="0.00267" iyz="0.00000" izz="0.00258"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_hip_roll" type="revolute">
+    <parent link="r_hip_frame"/>
+    <child link="r_hip_bracket"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-2.35619449" upper="0.331612558" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_hip_bracket">
+    <inertial>
+      <mass value="0.573"/>
+      <origin xyz="-0.01497 -0.00570 -0.03564"/>
+      <inertia ixx="0.00103" ixy="0.00006" ixz="0.00012" iyy="0.00226" iyz="-0.00006" izz="0.00206"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_hip_yaw" type="revolute">
+    <parent link="r_hip_bracket"/>
+    <child link="r_upper_leg"/>
+    <origin xyz="0.002 0 -0.076" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_upper_leg">
+    <inertial>
+      <mass value="4.813"/>
+      <origin xyz="-0.01286 0.00388 -0.10563"/>
+      <inertia ixx="0.03161" ixy="0.00007" ixz="-0.00101" iyy="0.03396" iyz="0.00084" izz="0.01135"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_knee_pitch" type="revolute">
+    <parent link="r_upper_leg"/>
+    <child link="r_lower_leg"/>
+    <origin xyz="-0.055 0 -0.263" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.28638132" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_lower_leg">
+    <inertial>
+      <mass value="3.212"/>
+      <origin xyz="0.01044 -0.00096 -0.12320"/>
+      <inertia ixx="0.02686" ixy="-0.00000" ixz="-0.00201" iyy="0.02845" iyz="0.00048" izz="0.00520"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_ankle_pitch" type="revolute">
+    <parent link="r_lower_leg"/>
+    <child link="r_ankle_frame"/>
+    <origin xyz="0.005 0 -0.34" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.698131701" upper="0.698131701" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_ankle_frame">
+    <inertial>
+      <mass value="0.084"/>
+      <origin xyz="0.00000 0.00000 0.00000"/>
+      <inertia ixx="0.00003" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00003"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <xacro:unless value="${ankle_version_value == 'v2'}">
+    <joint name="r_ankle_roll" type="revolute">
+      <parent link="r_ankle_frame"/>
+      <child link="r_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_foot">
+      <inertial>
+        <mass value="0.579"/>
+        <origin xyz="0.02167 0.00000 -0.05193"/>
+        <inertia ixx="0.00045" ixy="0.00000" ixz="0.00024" iyy="0.00166" iyz="0.00000" izz="0.00158"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:unless>
+  <xacro:if value="${ankle_version_value == 'v2'}">
+    <joint name="r_ankle_roll" type="revolute">
+      <parent link="r_ankle_frame"/>
+      <child link="r_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_foot">
+      <inertial>
+        <mass value="0.634"/>
+        <origin xyz="0.01282 0.00000 -0.04623"/>
+        <inertia ixx="0.00073" ixy="0.00000" ixz="0.00047" iyy="0.00256" iyz="0.00000" izz="0.00244"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:if>
+  <xacro:if value="${parallel_enabled}">
+    <xacro:igris_parallel_right_ankle/>
+  </xacro:if>
+  <!-- ===================== Left arm chain ===================== -->
+  <joint name="l_shoulder_pitch" type="revolute">
+    <parent link="torso"/>
+    <child link="l_shoulder_frame"/>
+    <origin xyz="0 0.171 0.266" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.141592654" upper="1.047197551" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_shoulder_frame">
+    <inertial>
+      <mass value="1.105"/>
+      <origin xyz="-0.00458 0.00011 0.04499"/>
+      <inertia ixx="0.00181" ixy="-0.00000" ixz="-0.00008" iyy="0.00180" iyz="-0.00000" izz="0.00101"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_shoulder_roll" type="revolute">
+    <parent link="l_shoulder_frame"/>
+    <child link="l_shoulder_bracket"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.174532925" upper="3.141592654" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_shoulder_bracket">
+    <inertial>
+      <mass value="0.253"/>
+      <origin xyz="0.01754 0.02514 0.00000"/>
+      <inertia ixx="0.00006" ixy="0.00003" ixz="0.00000" iyy="0.00034" iyz="0.00000" izz="0.00035"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_shoulder_yaw" type="revolute">
+    <parent link="l_shoulder_bracket"/>
+    <child link="l_upper_arm"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_upper_arm">
+    <inertial>
+      <mass value="2.144"/>
+      <origin xyz="-0.00169 -0.00639 -0.10638"/>
+      <inertia ixx="0.00966" ixy="-0.00001" ixz="-0.00010" iyy="0.00981" iyz="-0.00034" izz="0.00217"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_upper_arm.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_upper_arm.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_elbow_pitch" type="revolute">
+    <parent link="l_upper_arm"/>
+    <child link="l_elbow_bracket"/>
+    <origin xyz="0.01 0 -0.197" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.094395102" upper="0" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="l_elbow_bracket">
+    <inertial>
+      <mass value="0.137"/>
+      <origin xyz="0.00544 0.00380 -0.03838"/>
+      <inertia ixx="0.00008" ixy="-0.00000" ixz="-0.00001" iyy="0.00010" iyz="-0.00001" izz="0.00004"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/l_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_wrist_yaw" type="revolute">
+    <parent link="l_elbow_bracket"/>
+    <child link="l_forearm"/>
+    <origin xyz="-0.01 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <xacro:igris_lowerarm_module side="Left" parallel="${parallel_enabled}"/>
+  <!-- ===================== Right arm chain ===================== -->
+  <joint name="r_shoulder_pitch" type="revolute">
+    <parent link="torso"/>
+    <child link="r_shoulder_frame"/>
+    <origin xyz="0 -0.171 0.266" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.141592654" upper="1.047197551" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_shoulder_frame">
+    <inertial>
+      <mass value="1.105"/>
+      <origin xyz="-0.00458 -0.00011 0.04499"/>
+      <inertia ixx="0.00181" ixy="0.00000" ixz="-0.00008" iyy="0.00180" iyz="0.00000" izz="0.00101"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_shoulder_roll" type="revolute">
+    <parent link="r_shoulder_frame"/>
+    <child link="r_shoulder_bracket"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.141592654" upper="0.174532925" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_shoulder_bracket">
+    <inertial>
+      <mass value="0.253"/>
+      <origin xyz="0.01754 -0.02514 0.00000"/>
+      <inertia ixx="0.00006" ixy="-0.00003" ixz="0.00000" iyy="0.00034" iyz="-0.00000" izz="0.00035"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_shoulder_yaw" type="revolute">
+    <parent link="r_shoulder_bracket"/>
+    <child link="r_upper_arm"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_upper_arm">
+    <inertial>
+      <mass value="2.144"/>
+      <origin xyz="-0.00169 0.00639 -0.10638"/>
+      <inertia ixx="0.00966" ixy="0.00001" ixz="-0.00010" iyy="0.00981" iyz="0.00034" izz="0.00217"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_upper_arm.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_upper_arm.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_elbow_pitch" type="revolute">
+    <parent link="r_upper_arm"/>
+    <child link="r_elbow_bracket"/>
+    <origin xyz="0.01 0 -0.197" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.094395102" upper="0" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_elbow_bracket">
+    <inertial>
+      <mass value="0.137"/>
+      <origin xyz="0.00544 -0.00380 -0.03838"/>
+      <inertia ixx="0.00008" ixy="0.00000" ixz="-0.00001" iyy="0.00010" iyz="0.00001" izz="0.00004"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/r_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_wrist_yaw" type="revolute">
+    <parent link="r_elbow_bracket"/>
+    <child link="r_forearm"/>
+    <origin xyz="-0.01 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <xacro:igris_lowerarm_module side="Right" parallel="${parallel_enabled}"/>
+  <!-- ===================== Neck / head chain ===================== -->
+  <joint name="neck_yaw" type="revolute">
+    <parent link="torso"/>
+    <child link="neck"/>
+    <origin xyz="0 0 0.357" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.221730476" upper="1.221730476" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="neck">
+    <inertial>
+      <mass value="0.310"/>
+      <origin xyz="-0.00005 -0.00130 -0.00264"/>
+      <inertia ixx="0.00017" ixy="0.00000" ixz="0.00000" iyy="0.00010" iyz="0.00001" izz="0.00016"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/neck.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/neck.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="neck_pitch" type="revolute">
+    <parent link="neck"/>
+    <child link="head"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.523598776" upper="0.523598776" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="head">
+    <inertial>
+      <mass value="1.468"/>
+      <origin xyz="0.02850 0.00290 0.12862"/>
+      <inertia ixx="0.00574" ixy="-0.00008" ixz="0.00025" iyy="0.00727" iyz="0.00013" izz="0.00503"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/head.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c_v2/head.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- ===================== Torso IMU =====================
+       The body IMU existed only as the MuJoCo <site name="base_link_imu_site"> (the gyro /
+       accelerometer / framequat sensors attach to it), so the URDF had no frame for it and the
+       publishers stamped frame_ids that did not identify the sensor: igris_c_bridge used
+       "base_imu", which is no link at all, and igris_c_mujoco used "base_link", which IS a link
+       but the wrong one: it is the model root, and under base_type=pelvis it sits upstream of
+       waist_yaw, so it is not even rigidly attached to the torso the IMU is bolted to. This
+       link is the site, so the frame_id now identifies the sensor's actual frame.
+
+       Pose copied from the site: pos 0.050 0 0.047 in `torso`, quat 0.7071068 0 0.7071068 0,
+       which is +90 deg about Y (rpy 0 pi/2 0). Body convention (REP-145), NOT the optical
+       convention the camera links use: an IMU reports linear acceleration and angular rate in
+       its own body axes, with no optical axis to align to.
+
+       Declared once at top level rather than inside the base blocks: `torso` is defined by
+       whichever of igris_c_torso_base_block / igris_c_pelvis_base_block compiles, and exactly
+       one of them does, so a single joint parented to `torso` covers both variants. -->
+  <link name="torso_imu_link"/>
+  <joint name="torso_imu_joint" type="fixed">
+    <parent link="torso"/>
+    <child link="torso_imu_link"/>
+    <origin xyz="0.050 0 0.047" rpy="0 1.570796327 0"/>
+  </joint>
+  <!-- ===================== Head cameras =====================
+       Stereo RGB pair published as the single stitched sensor/eyes_stereo stream on the real
+       robot; the link names are that topic split per eye. Camera links are ROS OPTICAL frames (+Z forward, +X right, +Y down); the physical
+       toe-out that reads as yaw +-0.244346095 in a +X-forward mount frame is folded into these
+       values. The MuJoCo <camera> of the same name sits in the matching <frame> and adds
+       quat="0 1 0 0" (180 deg about X) to reach MuJoCo's -Z view / +Y up convention. -->
+  <link name="eyes_stereo_left_link"/>
+  <joint name="eyes_stereo_left_joint" type="fixed">
+    <parent link="head"/>
+    <child link="eyes_stereo_left_link"/>
+    <origin xyz="0.095516 0.026076 0.121000" rpy="-1.570796327 0 -1.326450232"/>
+  </joint>
+  <link name="eyes_stereo_right_link"/>
+  <joint name="eyes_stereo_right_joint" type="fixed">
+    <parent link="head"/>
+    <child link="eyes_stereo_right_link"/>
+    <origin xyz="0.095516 -0.026076 0.121000" rpy="-1.570796327 0 -1.815142422"/>
+  </joint>
+  <!-- ===================== Head RealSense D435i =====================
+       Intel RealSense D435i. Frames follow the device's own reference points, so each one is
+       parented to the reference its number is measured from rather than all to `head`.
+       Link names are the sensor/d435_* topic names igris_c_camera publishes, so the prefix is
+       d435_, not the device's d435i.
+
+       d435_center_link  MOUNT frame (+X forward, +Y left, +Z up), like every other
+                          *_camera_link here. Origin = centerline of the 1/4-20 tripod hole,
+                          which is what the D435x mechanical drawings measure from. Pose from
+                          the 2026-07-23 mount drawing (feature/d435i-mount 7c197e0): pitched
+                          54 deg down (0.942478 rad).
+       d435_depth_link   The SENSOR's depth origin: zero offset from the left imager, per
+                          datasheet 4.8.1. This is the geometry of the device.
+
+                          NOTE, and this is the one place where the URDF and the MuJoCo model
+                          deliberately differ: igris_c_camera runs align_depth: true, and
+                          rs2::align rebuilds the depth profile out of the colour one:
+                          copies colour's intrinsics wholesale, takes colour's width/height, and
+                          registers an IDENTITY extrinsic to colour (align.cpp:191-196). So the
+                          sensor/d435_depth that is actually PUBLISHED is a colour-frame image.
+                          The MuJoCo d435_depth camera therefore sits in the d435_color frame
+                          with colour's fovy 42, while this link stays on the imager.
+                          CONSEQUENCE: a consumer stamping or looking up the frame of the
+                          published aligned depth wants d435_color_link, NOT this link. This
+                          link describes where the depth sensor is, not where its output lives.
+                          If align_depth is ever set false the two converge again: move the
+                          MuJoCo camera back into the d435_ir_left frame and restore fovy 62.
+       d435_color_link   RGB origin, 32.5 mm from the same centerline (15 mm outboard of
+                          depth), same -4.2 mm depth. NOT in Table 4-19, which lists only the
+                          left imager; supplied from the mount drawing.
+       d435_imu_link     IMU origin. librealsense ds-calib-parsers.cpp:159 hardcodes the D435i
+                          depth_to_imu fallback translation as (-0.00552, 0.00510, 0.01174) with
+                          an identity rotation. rs2_extrinsics maps p_to = R*p_from + t
+                          (rs.cpp:4363), so the IMU ORIGIN expressed in depth coordinates is -t:
+                          (+0.00552, -0.00510, -0.01174). The sign does flip. Parented to
+                          d435_ir_left_link because that is the SENSOR's depth frame the constant
+                          is measured from; d435_depth_link is the aligned output.
+                          Rotation is identity on purpose: librealsense already rotates raw IMU
+                          samples into the depth coordinate system before publishing them
+                          (motion-transform.cpp correct_motion_helper), so the published
+                          sensor/d435_imu axes ARE the depth axes.
+
+       d435_ir_left_link  The physical left imager, and the SENSOR's depth origin (datasheet
+                          4.8.1: "the depth origin X-Y coordinates are the X-Y center of the left
+                          imager"; librealsense registers the two with register_same_extrinsics,
+                          d400-device.cpp:594). This is the frame sensor/d435_ir_left is
+                          published in, and the frame the IMU offset is measured from.
+                            +Y 17.5 mm  Table 4-19, 1/4-20 centerline -> left imager, D435/D435i
+                            -X  4.2 mm  Table 4-16, camera front glass Z' = -4.2 mm, i.e. the
+                                        depth ground-truth zero sits 4.2 mm behind the glass
+       d435_ir_right_link Second imager, 50 mm stereo baseline (Table 3-49). Sign fixed by
+                          geometry, not by the librealsense sign convention: on the centerline
+                          axis the left imager is +17.5 mm, so the right one is either -32.5 or
+                          +67.5 mm, and the D435 is 90 mm wide (+-45 mm), which leaves only
+                          -32.5 mm. That is +X 0.050 m in the depth optical frame, i.e. to the
+                          right, as expected.
+
+       depth/color/imu/ir_* are OPTICAL frames (+Z forward, +X right, +Y down), hence the
+       rpy="-pi/2 0 -pi/2" against the mount frame. Only d435_center_link keeps the
+       +X-forward mount convention. -->
+  <link name="d435_center_link"/>
+  <joint name="d435_center_joint" type="fixed">
+    <parent link="head"/>
+    <child link="d435_center_link"/>
+    <origin xyz="0.112677 0 0.159748" rpy="0 0.942478 0"/>
+  </joint>
+  <link name="d435_ir_left_link"/>
+  <joint name="d435_ir_left_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_ir_left_link"/>
+    <origin xyz="-0.0042 0.0175 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_depth_link"/>
+  <joint name="d435_depth_joint" type="fixed">
+    <parent link="d435_ir_left_link"/>
+    <child link="d435_depth_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="d435_color_link"/>
+  <joint name="d435_color_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_color_link"/>
+    <origin xyz="-0.0042 0.0325 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_ir_right_link"/>
+  <joint name="d435_ir_right_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_ir_right_link"/>
+    <origin xyz="-0.0042 -0.0325 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_imu_link"/>
+  <joint name="d435_imu_joint" type="fixed">
+    <parent link="d435_ir_left_link"/>
+    <child link="d435_imu_link"/>
+    <origin xyz="0.00552 -0.00510 -0.01174" rpy="0 0 0"/>
+  </joint>
+  <!-- ===================== Body (legs / arms / neck / end effector) ===================== -->
+</robot>

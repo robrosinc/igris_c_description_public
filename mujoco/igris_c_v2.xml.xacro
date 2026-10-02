@@ -1,0 +1,1218 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro" model="igris_c_v2">
+  <!-- ===================== 0. Build parameters: xacro args + properties ===================== -->
+  <xacro:arg name="base_type" default="torso"/>
+  <xacro:arg name="parallel" default="false"/>
+  <xacro:arg name="end_effector" default="dummy"/>
+  <xacro:arg name="fixed" default="false"/>
+  <xacro:arg name="ankle_version" default="v1"/>
+  <xacro:arg name="wrist_version" default="v1"/>
+  <xacro:property name="base_type_value" value="$(arg base_type)"/>
+  <xacro:property name="end_effector_value" value="$(arg end_effector)"/>
+  <xacro:property name="parallel_value" value="${'$(arg parallel)'.lower() == 'true'}"/>
+  <xacro:property name="fixed_value" value="${'$(arg fixed)'.lower() == 'true'}"/>
+  <!-- ankle_version: v1 = original foot (box visual), v2 = reinforced foot (mesh visual,
+       heavier + shifted COM inertial, new PLA connect anchors). Collision box is unchanged. -->
+  <xacro:property name="ankle_version_value" value="$(arg ankle_version)"/>
+  <!-- wrist_version: v1 = intersecting roll/pitch axes, universal+hinge pair on the parallel link.
+       v2 = offset roll/pitch axes, and that pair collapses into a single ball joint. Parenting and the
+       equality body pairs are identical in both versions; only geometry differs. -->
+  <xacro:property name="wrist_version_value" value="$(arg wrist_version)"/>
+  <!-- ===================== 1. Simulation header: compiler / size / option / default / asset ===================== -->
+  <compiler angle="radian" meshdir="../meshes/igris_c_v2/" balanceinertia="false"/>
+  <size njmax="8000" nconmax="4000"/>
+  <!-- Offscreen framebuffer for camera rendering. Must be >= the largest rendered frame or
+       mjr_render silently clips; 1280x720 covers a 1280x480 stereo stitch with headroom. -->
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+  <!-- Sim-rate tuning (2100 Hz). timestep = 1/2100; paired with MUJOCO_DATA_DECIMATION=7 to keep
+       publish at exactly 300 Hz (2100/7) and MUJOCO_COMMAND_DELAY=10 for ~5 ms latency. Must stay a
+       multiple of 300 Hz; see the table in ros_controller.h.
+       Lower bound: keyframe 0 has a ~5 mm geometric loop-closure residual the <connect> constraints
+       cannot fully close, so timesteps above ~1/1800 diverge at startup (1/1500 flies). 2100 Hz keeps
+       margin. connect/equality solref timeconst is 0.002 (>= ~2x timestep; contact solref 0.01 unchanged).
+       noslip_iterations=0 (MuJoCo default): the previous value of 10 cost ~46% of step time for
+       tangential-slip refinement not needed here.
+       Note: dynamic (walking/impact) stability at 2100 Hz should still be validated on hardware runs. -->
+  <option timestep="0.00047619048" iterations="100" tolerance="1e-7" solver="Newton" jacobian="dense" cone="elliptic" noslip_iterations="1" noslip_tolerance="1e-7"/>
+  <default>
+    <default class="robot">
+      <default class="visual">
+        <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.9 0.9 0.9 1.0"/>
+      </default>
+      <default class="collision">
+        <geom material="collision_material" rgba="1.0 0.28 0.1 1.0" condim="3" contype="1" conaffinity="1" priority="1" group="2" solref="0.01 1" friction="1 0.005 0.0001"/>
+        <equality solimp="0.9 0.95 0.001 0.5 2" solref="0.002 1"/>
+      </default>
+    </default>
+    <motor ctrllimited="true"/>
+    <default class="actuator_150">
+      <joint damping="0.5" frictionloss="0.5" limited="true" armature="0.2"/>
+      <motor ctrlrange="-150.0 150.0"/>
+    </default>
+    <default class="actuator_120">
+      <joint damping="0.5" frictionloss="2." limited="true" armature="0.12"/>
+      <motor ctrlrange="-120.0 120.0"/>
+    </default>
+    <default class="actuator_90">
+      <joint damping="0.0" frictionloss="0.1" limited="true" armature="0.1"/>
+      <motor ctrlrange="-90.0 90.0"/>
+    </default>
+    <default class="actuator_60">
+      <joint damping="0.5" frictionloss="0.54" limited="true" armature="0.019"/>
+      <motor ctrlrange="-60.0 60.0"/>
+    </default>
+    <default class="actuator_8">
+      <joint damping="0.0" frictionloss="0.264" limited="true" armature="0.01433"/>
+      <motor ctrlrange="-8.0 8.0"/>
+    </default>
+    <default class="dynamixel_xc330_t288">
+      <joint damping="0.03" frictionloss="0.001" limited="true" armature="0.01"/>
+    </default>
+    <default class="dynamixel_xm430_w210">
+      <joint damping="0.03" frictionloss="0.001" limited="true" armature="0.01"/>
+    </default>
+    <default class="actuator_7">
+      <joint damping="1.0" frictionloss="0.356" limited="true" armature="0.2488"/>
+      <motor ctrlrange="-7.0 7.0"/>
+    </default>
+    <default class="passive">
+      <joint damping="0.001" frictionloss="1e-4" limited="false" armature="1e-6"/>
+    </default>
+    <default class="slack">
+      <joint damping="0.001" frictionloss="1e-4" limited="true" armature="1e-6"/>
+    </default>
+  </default>
+  <asset>
+    <material name="random" rgba="0.0706 0.0706 0.0706 0.7"/>
+    <material name="default_material" rgba="0.7 0.7 0.7 1"/>
+    <material name="collision_material" rgba="1.0 0.28 0.1 0.9"/>
+    <mesh name="torso" file="torso.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="waist_frame" file="waist_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="waist_follower" file="waist_follower.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis" file="pelvis.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_upper_front" file="pelvis_upper_front.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_upper_back" file="pelvis_upper_back.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_lower" file="pelvis_lower.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="neck" file="neck.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="head" file="head.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_frame" file="l_hip_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_bracket" file="l_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_yaw_collision" file="upper_leg_collision.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_upper_leg" file="l_upper_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_lower_leg" file="l_lower_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_frame" file="l_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_foot_v1" file="l_foot_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_foot_v2" file="l_foot_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_frame" file="r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_bracket" file="r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_yaw_collision" file="upper_leg_collision.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_upper_leg" file="r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_lower_leg" file="r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_frame" file="r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_foot_v1" file="r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_foot_v2" file="r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_shoulder_frame" file="l_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_shoulder_bracket" file="l_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_upper_arm" file="l_upper_arm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_elbow_bracket" file="l_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_forearm" file="l_forearm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_coupler_v1" file="l_wrist_coupler_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_mount_v1" file="l_wrist_mount_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_shoulder_frame" file="r_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_shoulder_bracket" file="r_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_upper_arm" file="r_upper_arm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_elbow_bracket" file="r_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_forearm" file="r_forearm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_coupler_v1" file="r_wrist_coupler_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_mount_v1" file="r_wrist_mount_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_waist_flange" file="l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_waist_flange" file="r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_waist_parallel" file="l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_waist_parallel" file="r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_flange_out" file="l_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_flange_in" file="l_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_parallel_out" file="l_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_parallel_in" file="l_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_flange_out" file="r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_flange_in" file="r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_parallel_out" file="r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_parallel_in" file="r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_front_v1" file="l_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_back_v1" file="l_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_front_v1" file="l_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_back_v1" file="l_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_universal_front_v1" file="l_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_universal_back_v1" file="l_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_front_v1" file="r_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_back_v1" file="r_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_front_v1" file="r_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_back_v1" file="r_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_universal_front_v1" file="r_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_universal_back_v1" file="r_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_front_v1" file="l_wrist_flange_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_front_v1" file="l_wrist_rod_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_back_v1" file="l_wrist_flange_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_back_v1" file="l_wrist_rod_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_front_v1" file="r_wrist_flange_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_front_v1" file="r_wrist_rod_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_back_v1" file="r_wrist_flange_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_back_v1" file="r_wrist_rod_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <!-- v2 wrist meshes. Declared unconditionally, matching the foot_v1/foot_v2 pair. -->
+    <mesh name="l_wrist_coupler_v2" file="l_wrist_coupler_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_mount_v2" file="l_wrist_mount_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_front_v2" file="l_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_back_v2" file="l_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_front_v2" file="l_wrist_flange_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_back_v2" file="l_wrist_flange_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_front_v2" file="l_wrist_rod_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_back_v2" file="l_wrist_rod_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_front_v2" file="l_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_back_v2" file="l_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_coupler_v2" file="r_wrist_coupler_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_mount_v2" file="r_wrist_mount_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_front_v2" file="r_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_back_v2" file="r_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_front_v2" file="r_wrist_flange_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_back_v2" file="r_wrist_flange_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_front_v2" file="r_wrist_rod_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_back_v2" file="r_wrist_rod_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_front_v2" file="r_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_back_v2" file="r_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1="1.0 1.0 1.0" rgb2="0.4 0.4 0.4"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.9 0.9 0.9" rgb2=".85 .85 .85"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <!-- end_effector meshes: declared only for the selected end_effector. -->
+    <xacro:if value="${end_effector_value == 'hand'}">
+      <mesh name="l_palm" file="../igris_c_end_effector/hand/l_palm.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_palm" file="../igris_c_end_effector/hand/r_palm.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_proximal" file="../igris_c_end_effector/hand/l_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_middle" file="../igris_c_end_effector/hand/l_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_distal" file="../igris_c_end_effector/hand/l_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_proximal" file="../igris_c_end_effector/hand/r_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_middle" file="../igris_c_end_effector/hand/r_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_distal" file="../igris_c_end_effector/hand/r_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="finger_middle" file="../igris_c_end_effector/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="finger_distal" file="../igris_c_end_effector/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'magnet'}">
+      <mesh name="l_magnet" file="../igris_c_end_effector/magnet/l_magnet_gripper.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_magnet" file="../igris_c_end_effector/magnet/r_magnet_gripper.stl" scale="0.01 0.01 0.01"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == '1dof'}">
+      <mesh name="l_1_dof_gripper_fixed" file="../igris_c_end_effector/1_dof_gripper/l_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_1_dof_gripper_moving" file="../igris_c_end_effector/1_dof_gripper/l_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_1_dof_gripper_fixed" file="../igris_c_end_effector/1_dof_gripper/r_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_1_dof_gripper_moving" file="../igris_c_end_effector/1_dof_gripper/r_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+    </xacro:if>
+  </asset>
+  <!-- ===================== 2. Reusable macro definitions ===================== -->
+  <xacro:include filename="igris_c_lowerarm_module.xml.xacro"/>
+  <!-- Foot inertial + geometry (ankle_version v1/v2 inline). Shared by the parallel
+       and serial ankle so the version difference lives in one place per side. -->
+  <xacro:macro name="igris_c_l_foot">
+    <xacro:if value="${ankle_version_value == 'v2'}">
+      <!-- v2: reinforced foot - heavier, shifted COM, mesh visual -->
+      <inertial pos="0.01282 0.00000 -0.04623" mass="0.634" fullinertia="0.00073 0.00256 0.00244 0.00000 0.00047 0.00000"/>
+      <geom name="l_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+      <geom name="l_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="l_foot_v2" class="visual"/>
+    </xacro:if>
+    <xacro:unless value="${ankle_version_value == 'v2'}">
+      <!-- v1: original foot - mesh visual, box collision -->
+      <inertial pos="0.02167 0.00000 -0.05193" mass="0.579" fullinertia="0.00045 0.00166 0.00158 0.00000 0.00024 0.00000"/>
+      <geom name="l_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+      <geom name="l_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="l_foot_v1" class="visual"/>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- Foot inertial + geometry (ankle_version v1/v2 inline). Shared by the parallel
+       and serial ankle so the version difference lives in one place per side. -->
+  <xacro:macro name="igris_c_r_foot">
+    <xacro:if value="${ankle_version_value == 'v2'}">
+      <!-- v2: reinforced foot - heavier, shifted COM, mesh visual -->
+      <inertial pos="0.01282 0.00000 -0.04623" mass="0.634" fullinertia="0.00073 0.00256 0.00244 0.00000 0.00047 0.00000"/>
+      <geom name="r_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+      <geom name="r_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="r_foot_v2" class="visual"/>
+    </xacro:if>
+    <xacro:unless value="${ankle_version_value == 'v2'}">
+      <!-- v1: original foot - mesh visual, box collision -->
+      <inertial pos="0.02167 0.00000 -0.05193" mass="0.579" fullinertia="0.00045 0.00166 0.00158 0.00000 0.00024 0.00000"/>
+      <geom name="r_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+      <geom name="r_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="r_foot_v1" class="visual"/>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- Full l ankle: parallel (4-bar linkage, passive joints) or serial (actuator_90)
+       per parallel_value. Shared foot inertial/geometry via igris_c_l_foot. -->
+  <xacro:macro name="igris_c_l_ankle">
+    <xacro:if value="${parallel_value}">
+      <body name="l_ankle_frame" pos="0.005 0 -0.34" quat="1 0 0 0">
+        <joint name="l_ankle_pitch" type="hinge" ref="0.0" class="passive" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+        <joint name="l_ankle_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+        <inertial pos="0 0 0" mass="0.084" fullinertia="3e-05 2e-05 3e-05 0 0 0"/>
+        <geom name="l_ankle_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_frame" class="visual"/>
+        <body name="l_foot" pos="0 0 0" quat="1 0 0 0">
+          <joint name="l_ankle_roll" type="hinge" ref="0.0" class="passive" range="-0.34906585 0.34906585" limited="true" axis="1 0 0"/>
+          <joint name="l_ankle_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          <xacro:igris_c_l_foot/>
+        </body>
+      </body>
+      <body name="l_ankle_flange_out" pos="0.00500 0.03775 -0.08000" quat="1 0 0 0">
+        <joint name="l_ankle_flange_out" type="hinge" ref="0.0" class="actuator_90" range="-0.63006386 0.609119909" limited="true" axis="0 1 0"/>
+        <inertial pos="-0.01128 -0.00742 -0.00003" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0 0 0"/>
+        <geom name="l_ankle_flange_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_flange_out" class="visual"/>
+        <body name="l_ankle_parallel_out" pos="-0.03750 0.00000 -0.00011" quat="1 0 0 0">
+          <joint name="l_ankle_parallel_out" type="ball" ref="0.0" class="passive"/>
+          <inertial pos="0.00183 -0.00357 -0.13606" mass="0.130" fullinertia="0.00092 0.00092 0.00001 0.00000 0.000001 -0.00002"/>
+          <geom name="l_ankle_parallel_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_parallel_out" class="visual"/>
+        </body>
+      </body>
+      <body name="l_ankle_flange_in" pos="0.00500 -0.03775 -0.18800" quat="1 0 0 0">
+        <joint name="l_ankle_flange_in" type="hinge" ref="0.0" class="actuator_90" range="-0.617846555 0.523598776" limited="true" axis="0 1 0"/>
+        <inertial pos="-0.01128 0.00742 -0.00006" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0 0 0"/>
+        <geom name="l_ankle_flange_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_flange_in" class="visual"/>
+        <body name="l_ankle_parallel_in" pos="-0.03750 0.00000 -0.00019" quat="1 0 0 0">
+          <joint name="l_ankle_parallel_in" type="ball" ref="0.0" class="passive"/>
+          <inertial pos="0.00187 0.00365 -0.08089" mass="0.083" fullinertia="0.00022 0.00022 0.00001 0.00000 0.00000 0.00001"/>
+          <geom name="l_ankle_parallel_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_parallel_in" class="visual"/>
+        </body>
+      </body>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <body name="l_ankle_frame" pos="0.005 0 -0.34" quat="1 0 0 0">
+        <joint name="l_ankle_pitch" type="hinge" ref="0.0" class="actuator_90" range="-0.698131701 0.698131701" axis="0 1 0"/>
+        <joint name="l_ankle_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+        <inertial pos="0 0 0" mass="0.084" fullinertia="3e-05 2e-05 3e-05 0 0 0"/>
+        <geom name="l_ankle_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_ankle_frame" class="visual"/>
+        <body name="l_foot" pos="0 0 0" quat="1 0 0 0">
+          <joint name="l_ankle_roll" type="hinge" ref="0.0" class="actuator_90" range="-0.34906585 0.34906585" axis="1 0 0"/>
+          <joint name="l_ankle_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          <xacro:igris_c_l_foot/>
+        </body>
+      </body>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- Full r ankle: parallel (4-bar linkage, passive joints) or serial (actuator_90)
+       per parallel_value. Shared foot inertial/geometry via igris_c_r_foot. -->
+  <xacro:macro name="igris_c_r_ankle">
+    <xacro:if value="${parallel_value}">
+      <body name="r_ankle_frame" pos="0.005 0 -0.34" quat="1 0 0 0">
+        <joint name="r_ankle_pitch" type="hinge" ref="0.0" class="passive" range="-0.698131701 0.698131701" limited="true" axis="0 1 0"/>
+        <joint name="r_ankle_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+        <inertial pos="0 0 0" mass="0.084" fullinertia="3e-05 2e-05 3e-05 0 0 0"/>
+        <geom name="r_ankle_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_frame" class="visual"/>
+        <body name="r_foot" pos="0 0 0" quat="1 0 0 0">
+          <joint name="r_ankle_roll" type="hinge" ref="0.0" class="passive" range="-0.34906585 0.34906585" limited="true" axis="1 0 0"/>
+          <joint name="r_ankle_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          <xacro:igris_c_r_foot/>
+        </body>
+      </body>
+      <body name="r_ankle_flange_out" pos="0.00500 -0.03775 -0.08000" quat="1 0 0 0">
+        <joint name="r_ankle_flange_out" type="hinge" ref="0.0" class="actuator_90" range="-0.63006386 0.609119909" limited="true" axis="0 1 0"/>
+        <inertial pos="-0.01128 0.00742 -0.00003" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+        <geom name="r_ankle_flange_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_flange_out" class="visual"/>
+        <body name="r_ankle_parallel_out" pos="-0.03750 0.00000 -0.00011" quat="1 0 0 0">
+          <joint name="r_ankle_parallel_out" type="ball" ref="0.0" class="passive"/>
+          <inertial pos="0.00183 0.00357 -0.13606" mass="0.130" fullinertia="0.00092 0.00092 0.00001 0.00000 0.000001 0.00002"/>
+          <geom name="r_ankle_parallel_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_parallel_out" class="visual"/>
+        </body>
+      </body>
+      <body name="r_ankle_flange_in" pos="0.00500 0.03775 -0.18800" quat="1 0 0 0">
+        <joint name="r_ankle_flange_in" type="hinge" ref="0.0" class="actuator_90" range="-0.617846555 0.523598776" limited="true" axis="0 1 0"/>
+        <inertial pos="-0.01128 -0.00742 -0.00006" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+        <geom name="r_ankle_flange_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_flange_in" class="visual"/>
+        <body name="r_ankle_parallel_in" pos="-0.03750 0.00000 -0.00019" quat="1 0 0 0">
+          <joint name="r_ankle_parallel_in" type="ball" ref="0.0" class="passive"/>
+          <inertial pos="0.00187 -0.00365 -0.08089" mass="0.083" fullinertia="0.00022 0.00022 0.00001 0.00000 0.00000 -0.00001"/>
+          <geom name="r_ankle_parallel_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_parallel_in" class="visual"/>
+        </body>
+      </body>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <body name="r_ankle_frame" pos="0.005 0 -0.34" quat="1 0 0 0">
+        <joint name="r_ankle_pitch" type="hinge" ref="0.0" class="actuator_90" range="-0.698131701 0.698131701" axis="0 1 0"/>
+        <joint name="r_ankle_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+        <inertial pos="0 0 0" mass="0.084" fullinertia="3e-05 2e-05 3e-05 0 0 0"/>
+        <geom name="r_ankle_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_frame" class="visual"/>
+        <body name="r_foot" pos="0 0 0" quat="1 0 0 0">
+          <joint name="r_ankle_roll" type="hinge" ref="0.0" class="actuator_90" range="-0.34906585 0.34906585" axis="1 0 0"/>
+          <joint name="r_ankle_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+          <xacro:igris_c_r_foot/>
+        </body>
+      </body>
+    </xacro:unless>
+  </xacro:macro>
+  <xacro:macro name="igris_c_torso_parallel_waist_block">
+    <body name="l_waist_flange" pos="0 0.0905 0" quat="1 0 0 0">
+      <joint name="l_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+      <inertial pos="-0.01470 -0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+      <geom name="l_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_flange" class="visual"/>
+      <body name="l_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+        <joint name="l_waist_parallel" type="ball" ref="0.0" class="passive"/>
+        <inertial pos="0.00083 0.00172 0.02995" mass="0.030" fullinertia="0.00002 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+        <geom name="l_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_parallel" class="visual"/>
+      </body>
+    </body>
+    <body name="r_waist_flange" pos="0 -0.0905 0" quat="1 0 0 0">
+      <joint name="r_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+      <inertial pos="-0.01470 0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+      <geom name="r_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_flange" class="visual"/>
+      <body name="r_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+        <joint name="r_waist_parallel" type="ball" ref="0.0" class="passive"/>
+        <inertial pos="0.00083 -0.00172 0.02995" mass="0.030" fullinertia="0.00002 0.00002 0.00001 0 0 0"/>
+        <geom name="r_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_parallel" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_pelvis_parallel_waist_block">
+    <body name="l_waist_flange" pos="0 0.09050 0" quat="1 0 0 0">
+      <joint name="l_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+      <inertial pos="-0.01470 -0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+      <geom name="l_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_flange" class="visual"/>
+      <body name="l_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+        <joint name="l_waist_parallel" type="ball" ref="0.0" class="passive"/>
+        <inertial pos="0.00083 0.00172 0.02995" mass="0.030" fullinertia="0.00002 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+        <geom name="l_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_parallel" class="visual"/>
+      </body>
+    </body>
+    <body name="r_waist_flange" pos="0 -0.09050 0" quat="1 0 0 0">
+      <joint name="r_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+      <inertial pos="-0.01470 0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+      <geom name="r_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_flange" class="visual"/>
+      <body name="r_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+        <joint name="r_waist_parallel" type="ball" ref="0.0" class="passive"/>
+        <inertial pos="0.00083 -0.00172 0.02995" mass="0.030" fullinertia="0.00002 0.00002 0.00001 0 0 0"/>
+        <geom name="r_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_parallel" class="visual"/>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_upper_body">
+    <body name="l_shoulder_frame" pos="0 0.171 0.266" quat="1 0 0 0">
+      <joint name="l_shoulder_pitch" type="hinge" ref="0.0" class="actuator_60" range="-3.141592654 1.047197551" axis="0 1 0"/>
+      <joint name="l_shoulder_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+      <inertial pos="-0.00458 0.00011 0.04499" mass="1.105" fullinertia="0.00181 0.00180 0.00101 -0.00000 -0.00008 -0.00000"/>
+      <geom name="l_shoulder_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_shoulder_frame" class="visual"/>
+      <geom name="l_shoulder_frame_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_shoulder_frame" class="collision"/>
+      <body name="l_shoulder_bracket" pos="0 0 0" quat="1 0 0 0">
+        <joint name="l_shoulder_roll" type="hinge" ref="0.0" class="actuator_60" range="-0.174532925 3.141592654" axis="1 0 0"/>
+        <joint name="l_shoulder_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+        <inertial pos="0.01754 0.02514 0.00000" mass="0.253" fullinertia="0.00006 0.00034 0.00035 0.00003 0.00000 0.00000"/>
+        <geom name="l_shoulder_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_shoulder_bracket" class="visual"/>
+        <geom name="l_shoulder_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_shoulder_bracket" class="collision"/>
+        <body name="l_upper_arm" pos="0 0 0" quat="1 0 0 0">
+          <joint name="l_shoulder_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+          <joint name="l_shoulder_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+          <inertial pos="-0.00169 -0.00639 -0.10638" mass="2.144" fullinertia="0.00966 0.00981 0.00217 -0.00001 -0.00010 -0.00034"/>
+          <geom name="l_upper_arm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_upper_arm" class="visual"/>
+          <body name="l_elbow_bracket" pos="0.01 0 -0.197" quat="1 0 0 0">
+            <joint name="l_elbow_pitch" type="hinge" ref="0.0" class="actuator_60" range="-2.094395102 0" axis="0 1 0"/>
+            <joint name="l_elbow_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+            <inertial pos="0.00544 0.00380 -0.03838" mass="0.137" fullinertia="0.00008 0.00010 0.00004 -0.00000 -0.00001 -0.00001"/>
+            <geom name="l_elbow_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_elbow_bracket" class="visual"/>
+            <xacro:igris_c_lowerarm_module side="left" parallel="${parallel_value}"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="r_shoulder_frame" pos="0 -0.171 0.266" quat="1 0 0 0">
+      <joint name="r_shoulder_pitch" type="hinge" ref="0.0" class="actuator_60" range="-3.141592654 1.047197551" axis="0 1 0"/>
+      <joint name="r_shoulder_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+      <inertial pos="-0.00458 -0.00011 0.04499" mass="1.105" fullinertia="0.00181 0.00180 0.00101 0.00000 -0.00008 0.00000"/>
+      <geom name="r_shoulder_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_frame" class="visual"/>
+      <geom name="r_shoulder_frame_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_frame" class="collision"/>
+      <body name="r_shoulder_bracket" pos="0 0 0" quat="1 0 0 0">
+        <joint name="r_shoulder_roll" type="hinge" ref="0.0" class="actuator_60" range="-3.141592654 0.174532925" axis="1 0 0"/>
+        <joint name="r_shoulder_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+        <inertial pos="0.01754 -0.02514 0.00000" mass="0.253" fullinertia="0.00006 0.00034 0.00035 -0.00003 0.00000 -0.00000"/>
+        <geom name="r_shoulder_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_bracket" class="visual"/>
+        <geom name="r_shoulder_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_bracket" class="collision"/>
+        <body name="r_upper_arm" pos="0 0 0" quat="1 0 0 0">
+          <joint name="r_shoulder_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+          <joint name="r_shoulder_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+          <inertial pos="-0.00169 0.00639 -0.10638" mass="2.144" fullinertia="0.00966 0.00981 0.00217 0.00001 -0.00010 0.00034"/>
+          <geom name="r_upper_arm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_upper_arm" class="visual"/>
+          <body name="r_elbow_bracket" pos="0.01 0 -0.197" quat="1 0 0 0">
+            <joint name="r_elbow_pitch" type="hinge" ref="0.0" class="actuator_60" range="-2.094395102 0" axis="0 1 0"/>
+            <joint name="r_elbow_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+            <inertial pos="0.00544 -0.00380 -0.03838" mass="0.137" fullinertia="0.00008 0.00010 0.00004 0.00000 -0.00001 0.00001"/>
+            <geom name="r_elbow_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_elbow_bracket" class="visual"/>
+            <xacro:igris_c_lowerarm_module side="right" parallel="${parallel_value}"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="neck" pos="0 0 0.357" quat="1 0 0 0">
+      <joint name="neck_yaw" type="hinge" ref="0.0" class="actuator_7" range="-1.221730476 1.221730476" axis="0 0 1"/>
+      <inertial pos="-0.00005 -0.00130 -0.00264" mass="0.310" fullinertia="0.00017 0.0001 0.00016 0.00000 0.00000 0.00001"/>
+      <geom name="neck_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="neck" class="visual"/>
+      <body name="head" pos="0 0 0" quat="1 0 0 0">
+        <joint name="neck_pitch" type="hinge" ref="0.0" class="actuator_7" range="-0.523598776 0.523598776" axis="0 1 0"/>
+        <inertial pos="0.02850 0.00290 0.12862" mass="1.468" fullinertia="0.00574 0.00727 0.00503 -0.00008 0.00025 0.00013"/>
+        <geom name="head_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="head" class="visual"/>
+        <!-- Every camera below is <frame> + <camera>: the frame mirrors the matching
+             *_link in urdf/igris_c_v2.urdf.xacro one for one (same pos, quat = that link's
+             rpy), so it is the ROS OPTICAL frame (+Z forward, +X right, +Y down); the camera
+             inside adds the single quat="0 1 0 0" (180 deg about X) that reaches MuJoCo's
+             convention (-Z view, +Y up). Nothing is recomposed by hand, and the ROS/MuJoCo
+             difference sits in exactly one attribute per camera.
+
+             Head stereo RGB pair, stitched into the single 1280x480 sensor/eyes_stereo stream
+             on the real robot, so resolution is that stream's per-eye half. fovy stays at the
+             MuJoCo default: these lens intrinsics are unmeasured. -->
+        <frame name="eyes_stereo_left" pos="0.095516 0.026076 0.121000" quat="0.557207747 -0.557207747 0.435338404 -0.435338404">
+          <camera name="eyes_stereo_left" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+        </frame>
+        <frame name="eyes_stereo_right" pos="0.095516 -0.026076 0.121000" quat="0.435338404 -0.435338404 0.557207747 -0.557207747">
+          <camera name="eyes_stereo_right" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+        </frame>
+        <!-- RealSense D435i. The frame tree is the d435_*_link chain of
+             urdf/igris_c_v2.urdf.xacro, nested the same way, so every offset below is the raw
+             number from its source rather than a composed one. See that file for each source.
+
+             fovy is the nominal datasheet FOV for the resolution igris_c_camera actually runs:
+             configs/camera.yaml has d435 resolution / ir_resolution / output_resolution all at
+             640x480, which is 4:3, NOT 16:9. Table 3-49 (D435/D435i):
+               Depth FOV VGA (4:3)  H:75 / V:62 / D:89  (NOT used, see below)
+               Color Camera FOV     H:69 / V:42 / D:77  -> fovy 42 for BOTH colour and depth
+             d435_depth uses COLOUR's 42, not depth's 62: align_depth: true makes rs2::align
+             rebuild the depth profile from the colour one (align.cpp:191-196), so the depth
+             the robot actually publishes is clipped to the colour FOV. The sensor's wider
+             75x62 cone only exists upstream of the alignment.
+             The IR pair uses Table 3-13 (Wide Left/Right Imager, D430) H:90 / V:64 / D:98 ->
+             fovy 64. The H:90 / V:63 figure in Table 3-49 is the IR PROJECTOR, not the imager.
+             Datasheet note 3: lens tolerance is about +-3 deg, so these are nominal, not the
+             per-unit intrinsics rs-enumerate-devices reports.
+
+             Min-Z at 640x480 is 175 mm (Table 4-11). That is a SENSOR limit, not a clip plane,
+             so it is recorded here rather than pushed into <visual><map znear>, which is a
+             multiplier of stat.extent and would move every camera's near plane. -->
+        <frame name="d435_center" pos="0.112677 0 0.159748" quat="0.891006524 0 0.453990500 0">
+          <site name="d435_center" size="0.004" rgba="0.2 0.2 0.8 0.3"/>
+          <frame name="d435_ir_left" pos="-0.0042 0.0175 0" quat="0.5 -0.5 0.5 -0.5">
+            <camera name="d435_ir_left" mode="fixed" resolution="640 480" fovy="64" quat="0 1 0 0"/>
+            <!-- The SENSOR's depth origin, mirroring d435_depth_link. A <site>, not a <frame>:
+                 frames are compiler-only (they fold into their children and leave no mjModel
+                 entry, so mj_name2id(mjOBJ_FRAME, ...) returns -1), whereas a site survives
+                 into mjModel and is both queryable and drawable under Frame=Site. Zero offset
+                 from this frame, per datasheet 4.8.1. It carries no camera on purpose: what
+                 gets published is the ALIGNED depth, which renders from d435_color. -->
+            <site name="d435_depth" size="0.004" rgba="0.2 0.8 0.2 0.3"/>
+            <site name="d435_imu" pos="0.00552 -0.00510 -0.01174" size="0.004" rgba="0.8 0.2 0.2 0.3"/>
+          </frame>
+          <frame name="d435_color" pos="-0.0042 0.0325 0" quat="0.5 -0.5 0.5 -0.5">
+            <camera name="d435_color" mode="fixed" resolution="640 480" fovy="42" quat="0 1 0 0"/>
+            <!-- The depth camera renders from the COLOUR viewpoint on purpose, and this is
+                 the one place the MuJoCo model and the URDF deliberately disagree: the URDF's
+                 d435_depth_link stays on the left imager (the sensor's depth origin, datasheet
+                 4.8.1), while what igris_c_camera PUBLISHES is aligned depth, which rs2::align
+                 rebuilds with colour's intrinsics, colour's dimensions and an identity extrinsic
+                 to colour (align.cpp:191-196). Rendering this from the imager with depth's own
+                 fovy 62 would produce ~20 deg of scene the real aligned stream never carries.
+                 scripts/camera_frame_check.py therefore pairs this camera with d435_color_link,
+                 not d435_depth_link. -->
+            <camera name="d435_depth" mode="fixed" resolution="640 480" fovy="42" quat="0 1 0 0"/>
+          </frame>
+          <frame name="d435_ir_right" pos="-0.0042 -0.0325 0" quat="0.5 -0.5 0.5 -0.5">
+            <camera name="d435_ir_right" mode="fixed" resolution="640 480" fovy="64" quat="0 1 0 0"/>
+          </frame>
+        </frame>
+      </body>
+    </body>
+  </xacro:macro>
+  <!-- Both legs (hip -> knee -> ankle). Identical for the torso- and pelvis-rooted
+       trees, so defined once. The ankle is parallel (4-bar) or serial per parallel_value. -->
+  <xacro:macro name="igris_c_legs">
+    <body name="l_hip_frame" pos="-0.0115 0.0897 -0.14" quat="1 0 0 0">
+      <joint name="l_hip_pitch" type="hinge" ref="0.0" class="actuator_150" range="-2.059488517 0.523598776" axis="0 1 0"/>
+      <joint name="l_hip_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+      <inertial pos="0.00973 -0.00102 0.00002" mass="1.894" fullinertia="0.00261 0.00267 0.00258 -0.00001 0.00000 0.00000"/>
+      <geom name="l_hip_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_hip_frame" class="visual"/>
+      <body name="l_hip_bracket" pos="0 0 0" quat="1 0 0 0">
+        <joint name="l_hip_roll" type="hinge" ref="0.0" class="actuator_120" range="-0.331612558 2.35619449" axis="1 0 0"/>
+        <joint name="l_hip_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+        <inertial pos="-0.01497 0.00570 -0.03564" mass="0.573" fullinertia="0.00103 0.00226 0.00206 -0.00006 0.00012 0.00006"/>
+        <geom name="l_hip_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_hip_bracket" class="visual"/>
+        <geom name="l_hip_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_hip_bracket" class="collision"/>
+        <body name="l_upper_leg" pos="0.002 0 -0.076" quat="1 0 0 0">
+          <joint name="l_hip_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+          <joint name="l_hip_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+          <inertial pos="-0.01286 -0.00388 -0.10563" mass="4.813" fullinertia="0.03161 0.03396 0.01135 -0.00007 -0.00101 -0.00084"/>
+          <geom name="l_upper_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_hip_yaw_collision" class="collision"/>
+          <geom name="l_upper_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_upper_leg" class="visual"/>
+          <body name="l_lower_leg" pos="-0.055 0 -0.263" quat="1 0 0 0">
+            <joint name="l_knee_pitch" type="hinge" ref="0.0" class="actuator_150" range="0 2.28638132" axis="0 1 0"/>
+            <joint name="l_knee_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            <inertial pos="0.01044 0.00096 -0.12320" mass="3.212" fullinertia="0.02686 0.02845 0.0052 0.00000 -0.00201 -0.00048"/>
+            <geom name="l_lower_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_lower_leg" class="collision"/>
+            <geom name="l_lower_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_lower_leg" class="visual"/>
+            <xacro:igris_c_l_ankle/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="r_hip_frame" pos="-0.0115 -0.0897 -0.14" quat="1 0 0 0">
+      <joint name="r_hip_pitch" type="hinge" ref="0.0" class="actuator_150" range="-2.059488517 0.523598776" axis="0 1 0"/>
+      <joint name="r_hip_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+      <inertial pos="0.00973 0.00102 0.00002" mass="1.894" fullinertia="0.00261 0.00267 0.00258 0.00001 0.00000 0.00000"/>
+      <geom name="r_hip_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_frame" class="visual"/>
+      <body name="r_hip_bracket" pos="0 0 0" quat="1 0 0 0">
+        <joint name="r_hip_roll" type="hinge" ref="0.0" class="actuator_120" range="-2.35619449 0.331612558" axis="1 0 0"/>
+        <joint name="r_hip_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+        <inertial pos="-0.01497 -0.00570 -0.03564" mass="0.573" fullinertia="0.00103 0.00226 0.00206 0.00006 0.00012 -0.00006"/>
+        <geom name="r_hip_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_bracket" class="visual"/>
+        <geom name="r_hip_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_bracket" class="collision"/>
+        <body name="r_upper_leg" pos="0.002 0 -0.076" quat="1 0 0 0">
+          <joint name="r_hip_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+          <joint name="r_hip_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+          <inertial pos="-0.01286 0.00388 -0.10563" mass="4.813" fullinertia="0.03161 0.03396 0.01135 0.00007 -0.00101 0.00084"/>
+          <geom name="r_upper_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_hip_yaw_collision" class="collision"/>
+          <geom name="r_upper_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_upper_leg" class="visual"/>
+          <body name="r_lower_leg" pos="-0.055 0 -0.263" quat="1 0 0 0">
+            <joint name="r_knee_pitch" type="hinge" ref="0.0" class="actuator_150" range="0 2.28638132" axis="0 1 0"/>
+            <joint name="r_knee_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            <inertial pos="0.01044 -0.00096 -0.12320" mass="3.212" fullinertia="0.02686 0.02845 0.0052 -0.00000 -0.00201 0.00048"/>
+            <geom name="r_lower_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_lower_leg" class="collision"/>
+            <geom name="r_lower_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_lower_leg" class="visual"/>
+            <xacro:igris_c_r_ankle/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </xacro:macro>
+  <!-- Torso-rooted tree contents (everything below the root body). Shared by the
+       free-base and fixed-base variants; only the root <body>/<freejoint> differs. -->
+  <xacro:macro name="igris_c_torso_base_contents">
+    <site name="base_link_imu_site" pos="0.050 0 0.047" quat="0.7071068 0 0.7071068 0" size="0.01"/>
+    <inertial pos="0.00175 0.00112 0.15154" mass="12.974" fullinertia="0.15110 0.12880 0.08070 -0.00136 0.00843 -0.00089"/>
+    <geom name="torso_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="torso" class="collision"/>
+    <geom name="torso_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="torso" class="visual"/>
+    <body name="waist_frame" pos="0.0 0.0 0.0" quat="1 0 0 0">
+      <joint name="waist_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+      <joint name="waist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+      <inertial pos="0.02597 0 -0.00927" mass="0.208" fullinertia="0.00031 0.00031 0.00058 0.00000 0.00003 0.00000"/>
+      <geom name="waist_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="waist_frame" class="visual"/>
+      <body name="waist_follower" pos="0.05 0 -0.026" quat="1 0 0 0">
+        <xacro:if value="${parallel_value}">
+          <joint name="waist_roll" type="hinge" ref="0.0" class="passive" range="-0.31 0.31" limited="true" axis="1 0 0"/>
+          <joint name="waist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+        </xacro:if>
+        <xacro:unless value="${parallel_value}">
+          <joint name="waist_roll" type="hinge" ref="0.0" class="actuator_60" range="-0.314159265 0.314159265" axis="1 0 0"/>
+          <joint name="waist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+        </xacro:unless>
+        <inertial pos="0.0 0.0 -0.00829" mass="0.136" fullinertia="0.00005 0.00011 0.00007 0 0 0"/>
+        <geom name="waist_follower_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="waist_follower" class="visual"/>
+        <body name="pelvis" pos="0.0 0.0 -0.04" quat="1 0 0 0">
+          <site name="pelvis_link_site" pos="0.050 0 0.047" quat="1 0 0 0" size="0.01"/>
+          <xacro:if value="${parallel_value}">
+            <joint name="waist_pitch" type="hinge" ref="0.0" class="passive" range="-0.872664626 0.287979" limited="true" axis="0 1 0"/>
+            <joint name="waist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+          </xacro:if>
+          <xacro:unless value="${parallel_value}">
+            <joint name="waist_pitch" type="hinge" ref="0.0" class="actuator_60" range="-0.872664626 0.287979327" axis="0 1 0"/>
+            <joint name="waist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+          </xacro:unless>
+          <inertial pos="-0.04960 0.0 -0.05163" mass="8.124" fullinertia="0.04342 0.05156 0.04212 0.00001 0.00325 0.00000"/>
+          <geom name="pelvis_collision_upper_front" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_front" class="collision"/>
+          <geom name="pelvis_collision_upper_back" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_back" class="collision"/>
+          <geom name="pelvis_collision_lower" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_lower" class="collision"/>
+          <geom name="pelvis_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="pelvis" class="visual" rgba="0.9 0.9 0.9 0.3"/>
+          <xacro:if value="${parallel_value}">
+            <xacro:igris_c_torso_parallel_waist_block/>
+          </xacro:if>
+          <xacro:igris_c_legs/>
+        </body>
+      </body>
+    </body>
+    <xacro:igris_c_upper_body/>
+  </xacro:macro>
+  <xacro:macro name="igris_c_torso_base_block">
+    <xacro:if value="${not fixed_value}">
+      <body name="torso" pos="0.0 0.0 0.0" quat="1 0 0 0" childclass="robot">
+        <freejoint name="floating_base"/>
+        <xacro:igris_c_torso_base_contents/>
+      </body>
+    </xacro:if>
+    <xacro:unless value="${not fixed_value}">
+      <body name="torso" pos="0.0 0.0 1.5" euler="0 0.35 0" childclass="robot">
+        <xacro:igris_c_torso_base_contents/>
+      </body>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- Pelvis-rooted tree contents (inverted chain: torso hangs above via waist).
+       Shared by free-base and fixed-base; only the root <body>/<freejoint> differs. -->
+  <xacro:macro name="igris_c_pelvis_base_contents">
+    <site name="pelvis_link_site" pos="0.050 0 0.047" quat="1 0 0 0" size="0.01"/>
+    <inertial pos="-0.04960 0.0 -0.05163" mass="8.124" fullinertia="0.04342 0.05156 0.04212 0.00001 0.00325 0.00000"/>
+    <geom name="pelvis_collision_upper_front" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_front" class="collision"/>
+    <geom name="pelvis_collision_upper_back" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_back" class="collision"/>
+    <geom name="pelvis_collision_lower" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_lower" class="collision"/>
+    <geom name="pelvis_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="pelvis" class="visual" rgba="0.9 0.9 0.9 0.3"/>
+    <xacro:igris_c_legs/>
+    <xacro:if value="${parallel_value}">
+      <xacro:igris_c_pelvis_parallel_waist_block/>
+    </xacro:if>
+    <body name="waist_follower" pos="0 0 0" quat="1 0 0 0">
+      <xacro:if value="${parallel_value}">
+        <joint name="waist_pitch" type="hinge" ref="0.0" class="passive" range="-0.872664626 0.287979327" limited="true" axis="0 -1 0"/>
+        <joint name="waist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 -1 0"/>
+      </xacro:if>
+      <xacro:unless value="${parallel_value}">
+        <joint name="waist_pitch" type="hinge" ref="0.0" class="actuator_60" range="-0.872664626 0.287979327" axis="0 -1 0"/>
+        <joint name="waist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 -1 0"/>
+      </xacro:unless>
+      <inertial pos="0.00000 0.00000 -0.00829" mass="0.136" fullinertia="0.00005 0.00011 0.00007 0 0 0"/>
+      <geom name="waist_follower_visual" pos="0 0 0.04" quat="1 0 0 0" material="random" type="mesh" mesh="waist_follower" class="visual" rgba="${parallel_value and '0.9 0.9 0.9 0.3' or '1 1 1 1'}"/>
+      <body name="waist_frame" pos="0 0 0.04" quat="1 0 0 0">
+        <xacro:if value="${parallel_value}">
+          <joint name="waist_roll" type="hinge" ref="0.0" class="passive" range="-0.314159265 0.314159265" limited="true" axis="-1 0 0"/>
+          <joint name="waist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="-1 0 0"/>
+        </xacro:if>
+        <xacro:unless value="${parallel_value}">
+          <joint name="waist_roll" type="hinge" ref="0.0" class="actuator_60" range="-0.314159265 0.314159265" axis="-1 0 0"/>
+          <joint name="waist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="-1 0 0"/>
+        </xacro:unless>
+        <inertial pos="0.02597 0.00000 -0.00927" mass="0.208" fullinertia="0.00031 0.00031 0.00058 0.00000 0.00003 0.00000"/>
+        <geom name="waist_frame_visual" pos="-0.05 0 0.026" quat="1 0 0 0" material="random" type="mesh" mesh="waist_frame" class="visual"/>
+        <body name="torso" pos="-0.05 0 0.026" quat="1 0 0 0">
+          <joint name="waist_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 -1"/>
+          <joint name="waist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 -1"/>
+          <site name="base_link_imu_site" pos="0.050 0 0.047" quat="0.7071068 0 0.7071068 0" size="0.01"/>
+          <inertial pos="0.00175 0.00112 0.15154" mass="12.974" fullinertia="0.15110 0.12880 0.08070 -0.00136 0.00843 -0.00089"/>
+          <geom name="torso_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="torso" class="collision"/>
+          <geom name="torso_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="torso" class="visual"/>
+          <xacro:igris_c_upper_body/>
+        </body>
+      </body>
+    </body>
+  </xacro:macro>
+  <xacro:macro name="igris_c_pelvis_base_block">
+    <xacro:if value="${not fixed_value}">
+      <body name="pelvis" pos="0.0 0.0 0.0" quat="1 0 0 0" childclass="robot">
+        <freejoint name="floating_base"/>
+        <xacro:igris_c_pelvis_base_contents/>
+      </body>
+    </xacro:if>
+    <xacro:unless value="${not fixed_value}">
+      <body name="pelvis" pos="0.0 0.0 1.5" euler="0 0.35 0" childclass="robot">
+        <xacro:igris_c_pelvis_base_contents/>
+      </body>
+    </xacro:unless>
+  </xacro:macro>
+  <!-- ===================== 4. Model tree (worldbody) ===================== -->
+  <worldbody>
+    <geom name="floor" size="10 10 .05" type="plane" material="grid" condim="3" euler="0 0. 0"/>
+    <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0.5 0.5 -5"/>
+    <light directional="true" diffuse=".3 .3 .3" pos="10 0 0" dir="-10 0 0"/>
+    <xacro:if value="${base_type_value == 'torso'}">
+      <xacro:igris_c_torso_base_block/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis'}">
+      <xacro:igris_c_pelvis_base_block/>
+    </xacro:if>
+  </worldbody>
+  <!-- ===================== equality ===================== -->
+  <xacro:if value="${parallel_value}">
+    <equality>
+      <connect body1="l_waist_parallel" body2="waist_frame" anchor="0.00167 0.0035 0.05987" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      <connect body1="r_waist_parallel" body2="waist_frame" anchor="0.00167 -0.0035 0.05987" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      <xacro:unless value="${ankle_version_value == 'v2'}">
+        <connect body1="l_ankle_parallel_out" body2="l_foot" anchor="0.00350 -0.00675 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_ankle_parallel_in" body2="l_foot" anchor="0.00350 0.00675 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_out" body2="r_foot" anchor="0.00350 0.00675 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_in" body2="r_foot" anchor="0.00350 -0.00675 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:unless>
+      <xacro:if value="${ankle_version_value == 'v2'}">
+        <connect body1="l_ankle_parallel_out" body2="l_foot" anchor="0.00150 -0.00775 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_ankle_parallel_in" body2="l_foot" anchor="0.00150 0.00775 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_out" body2="r_foot" anchor="0.00150 0.00775 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_in" body2="r_foot" anchor="0.00150 -0.00775 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:if>
+      <!-- Two loops per side, same body pairs in both versions: the planar loop closes rod -> connector,
+           the spatial loop closes connector -> parallel. Only the anchors differ, and anchor is expressed
+           in body1's frame. -->
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <connect body1="l_wrist_rod_front" body2="l_wrist_connector_front" anchor="0 -0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_back" body2="l_wrist_connector_back" anchor="0 -0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_front" body2="r_wrist_connector_front" anchor="0 0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_back" body2="r_wrist_connector_back" anchor="0 0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_front" body2="l_wrist_parallel_front" anchor="-0.0115 0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_back" body2="l_wrist_parallel_back" anchor="0.0115 0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_front" body2="r_wrist_parallel_front" anchor="-0.0115 -0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_back" body2="r_wrist_parallel_back" anchor="0.0115 -0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <connect body1="l_wrist_connector_front" body2="l_wrist_parallel_front" anchor="0.0 0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_back" body2="l_wrist_parallel_back" anchor="0.0 0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_front" body2="r_wrist_parallel_front" anchor="0.0 -0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_back" body2="r_wrist_parallel_back" anchor="0.0 -0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_front" body2="l_wrist_connector_front" anchor="0.0 -0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_back" body2="l_wrist_connector_back" anchor="0.0 -0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_front" body2="r_wrist_connector_front" anchor="0.0 0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_back" body2="r_wrist_connector_back" anchor="0.0 0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:unless>
+    </equality>
+  </xacro:if>
+  <!-- ===================== actuator ===================== -->
+  <actuator>
+    <xacro:if value="${parallel_value}">
+      <motor name="waist_yaw" joint="waist_yaw" class="actuator_60"/>
+      <motor name="l_waist_flange" joint="l_waist_flange" class="actuator_60"/>
+      <motor name="r_waist_flange" joint="r_waist_flange" class="actuator_60"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="waist_yaw" joint="waist_yaw" class="actuator_60"/>
+      <motor name="waist_roll" joint="waist_roll" class="actuator_60"/>
+      <motor name="waist_pitch" joint="waist_pitch" class="actuator_60"/>
+    </xacro:unless>
+    <motor name="l_hip_pitch" joint="l_hip_pitch" class="actuator_150"/>
+    <motor name="l_hip_roll" joint="l_hip_roll" class="actuator_120"/>
+    <motor name="l_hip_yaw" joint="l_hip_yaw" class="actuator_60"/>
+    <motor name="l_knee_pitch" joint="l_knee_pitch" class="actuator_150"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="l_ankle_flange_out" joint="l_ankle_flange_out" class="actuator_90"/>
+      <motor name="l_ankle_flange_in" joint="l_ankle_flange_in" class="actuator_90"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="l_ankle_pitch" joint="l_ankle_pitch" class="actuator_90"/>
+      <motor name="l_ankle_roll" joint="l_ankle_roll" class="actuator_90"/>
+    </xacro:unless>
+    <motor name="r_hip_pitch" joint="r_hip_pitch" class="actuator_150"/>
+    <motor name="r_hip_roll" joint="r_hip_roll" class="actuator_120"/>
+    <motor name="r_hip_yaw" joint="r_hip_yaw" class="actuator_60"/>
+    <motor name="r_knee_pitch" joint="r_knee_pitch" class="actuator_150"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="r_ankle_flange_out" joint="r_ankle_flange_out" class="actuator_90"/>
+      <motor name="r_ankle_flange_in" joint="r_ankle_flange_in" class="actuator_90"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="r_ankle_pitch" joint="r_ankle_pitch" class="actuator_90"/>
+      <motor name="r_ankle_roll" joint="r_ankle_roll" class="actuator_90"/>
+    </xacro:unless>
+    <motor name="l_shoulder_pitch" joint="l_shoulder_pitch" class="actuator_60"/>
+    <motor name="l_shoulder_roll" joint="l_shoulder_roll" class="actuator_60"/>
+    <motor name="l_shoulder_yaw" joint="l_shoulder_yaw" class="actuator_60"/>
+    <motor name="l_elbow_pitch" joint="l_elbow_pitch" class="actuator_60"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="l_wrist_yaw" joint="l_wrist_yaw" class="actuator_8"/>
+      <motor name="l_wrist_flange_front" joint="l_wrist_flange_front" class="actuator_8"/>
+      <motor name="l_wrist_flange_back" joint="l_wrist_flange_back" class="actuator_8"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="l_wrist_yaw" joint="l_wrist_yaw" class="actuator_8"/>
+      <motor name="l_wrist_roll" joint="l_wrist_roll" class="actuator_8"/>
+      <motor name="l_wrist_pitch" joint="l_wrist_pitch" class="actuator_8"/>
+    </xacro:unless>
+    <motor name="r_shoulder_pitch" joint="r_shoulder_pitch" class="actuator_60"/>
+    <motor name="r_shoulder_roll" joint="r_shoulder_roll" class="actuator_60"/>
+    <motor name="r_shoulder_yaw" joint="r_shoulder_yaw" class="actuator_60"/>
+    <motor name="r_elbow_pitch" joint="r_elbow_pitch" class="actuator_60"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="r_wrist_yaw" joint="r_wrist_yaw" class="actuator_8"/>
+      <motor name="r_wrist_flange_front" joint="r_wrist_flange_front" class="actuator_8"/>
+      <motor name="r_wrist_flange_back" joint="r_wrist_flange_back" class="actuator_8"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="r_wrist_yaw" joint="r_wrist_yaw" class="actuator_8"/>
+      <motor name="r_wrist_roll" joint="r_wrist_roll" class="actuator_8"/>
+      <motor name="r_wrist_pitch" joint="r_wrist_pitch" class="actuator_8"/>
+    </xacro:unless>
+    <motor name="neck_yaw" joint="neck_yaw" class="actuator_7"/>
+    <motor name="neck_pitch" joint="neck_pitch" class="actuator_7"/>
+    <xacro:if value="${parallel_value}">
+      <position name="waist_yaw_Pos" joint="waist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_waist_flange_Pos" joint="l_waist_flange" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_waist_flange_Pos" joint="r_waist_flange" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="waist_yaw_Pos" joint="waist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="waist_roll_Pos" joint="waist_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="waist_pitch_Pos" joint="waist_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="l_hip_pitch_Pos" joint="l_hip_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_hip_roll_Pos" joint="l_hip_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_hip_yaw_Pos" joint="l_hip_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_knee_pitch_Pos" joint="l_knee_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="l_ankle_flange_out_Pos" joint="l_ankle_flange_out" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_ankle_flange_in_Pos" joint="l_ankle_flange_in" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="l_ankle_pitch_Pos" joint="l_ankle_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_ankle_roll_Pos" joint="l_ankle_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="r_hip_pitch_Pos" joint="r_hip_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_hip_roll_Pos" joint="r_hip_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_hip_yaw_Pos" joint="r_hip_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_knee_pitch_Pos" joint="r_knee_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="r_ankle_flange_out_Pos" joint="r_ankle_flange_out" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_ankle_flange_in_Pos" joint="r_ankle_flange_in" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="r_ankle_pitch_Pos" joint="r_ankle_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_ankle_roll_Pos" joint="r_ankle_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="l_shoulder_pitch_Pos" joint="l_shoulder_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_shoulder_roll_Pos" joint="l_shoulder_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_shoulder_yaw_Pos" joint="l_shoulder_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_elbow_pitch_Pos" joint="l_elbow_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="l_wrist_yaw_Pos" joint="l_wrist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_flange_front_Pos" joint="l_wrist_flange_front" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_flange_back_Pos" joint="l_wrist_flange_back" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="l_wrist_yaw_Pos" joint="l_wrist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_roll_Pos" joint="l_wrist_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_pitch_Pos" joint="l_wrist_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="r_shoulder_pitch_Pos" joint="r_shoulder_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_shoulder_roll_Pos" joint="r_shoulder_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_shoulder_yaw_Pos" joint="r_shoulder_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_elbow_pitch_Pos" joint="r_elbow_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="r_wrist_yaw_Pos" joint="r_wrist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_flange_front_Pos" joint="r_wrist_flange_front" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_flange_back_Pos" joint="r_wrist_flange_back" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="r_wrist_yaw_Pos" joint="r_wrist_yaw" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_roll_Pos" joint="r_wrist_roll" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_pitch_Pos" joint="r_wrist_pitch" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="neck_yaw_Pos" joint="neck_yaw" class="actuator_7" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="neck_pitch_Pos" joint="neck_pitch" class="actuator_7" kp="2000" kv="0" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="waist_yaw_Vel" joint="waist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_waist_flange_Vel" joint="l_waist_flange" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_waist_flange_Vel" joint="r_waist_flange" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="waist_yaw_Vel" joint="waist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="waist_roll_Vel" joint="waist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="waist_pitch_Vel" joint="waist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="l_hip_pitch_Vel" joint="l_hip_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_hip_roll_Vel" joint="l_hip_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_hip_yaw_Vel" joint="l_hip_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_knee_pitch_Vel" joint="l_knee_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="l_ankle_flange_out_Vel" joint="l_ankle_flange_out" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_ankle_flange_in_Vel" joint="l_ankle_flange_in" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="l_ankle_pitch_Vel" joint="l_ankle_pitch" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_ankle_roll_Vel" joint="l_ankle_roll" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="r_hip_pitch_Vel" joint="r_hip_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_hip_roll_Vel" joint="r_hip_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_hip_yaw_Vel" joint="r_hip_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_knee_pitch_Vel" joint="r_knee_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="r_ankle_flange_out_Vel" joint="r_ankle_flange_out" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_ankle_flange_in_Vel" joint="r_ankle_flange_in" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="r_ankle_pitch_Vel" joint="r_ankle_pitch" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_ankle_roll_Vel" joint="r_ankle_roll" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="l_shoulder_pitch_Vel" joint="l_shoulder_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_shoulder_roll_Vel" joint="l_shoulder_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_shoulder_yaw_Vel" joint="l_shoulder_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_elbow_pitch_Vel" joint="l_elbow_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="l_wrist_yaw_Vel" joint="l_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_flange_front_Vel" joint="l_wrist_flange_front" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_flange_back_Vel" joint="l_wrist_flange_back" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="l_wrist_yaw_Vel" joint="l_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_roll_Vel" joint="l_wrist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_pitch_Vel" joint="l_wrist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="r_shoulder_pitch_Vel" joint="r_shoulder_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_shoulder_roll_Vel" joint="r_shoulder_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_shoulder_yaw_Vel" joint="r_shoulder_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_elbow_pitch_Vel" joint="r_elbow_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="r_wrist_yaw_Vel" joint="r_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_flange_front_Vel" joint="r_wrist_flange_front" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_flange_back_Vel" joint="r_wrist_flange_back" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="r_wrist_yaw_Vel" joint="r_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_roll_Vel" joint="r_wrist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_pitch_Vel" joint="r_wrist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="neck_yaw_Vel" joint="neck_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="neck_pitch_Vel" joint="neck_pitch" kv="0" ctrlrange="-50 50"/>
+    <!-- ===================== end-effector (hand / 1dof) position actuators =====================
+         Appended AFTER the 31x3 body actuator blocks (motor/position/velocity) so the existing
+         body indexing (actuator_dof = body-joint count) is preserved. All names carry the
+         "_HandPos" suffix; ros_controller.cpp counts them to exclude them from actuator_dof and
+         drives them from the handV1 SHM command. kp/dampratio are position-control tuning values
+         (validate finger stability on a sim run). End-effector joints use MuJoCo joint defaults: the
+         DXL body-actuator classes (actuator_8/passive) are removed on the hand/1dof joints since no
+         joint-dynamics class matches their Dynamixels (XC330-T288-T / XM430-W210-T). forcerange caps
+         actuator torque (current-based-position grip, F = I_limit * Kt, I_limit=0.3A from end_effector
+         setCurrentLimits): hand 0.34 Nm (XC330 Kt~1.14), 1dof 0.39 Nm (XM430-W210-T Kt~1.30). Motor-
+         shaft cap; finger/gripper drive ratio not modeled. -->
+    <xacro:if value="${end_effector_value == 'hand'}">
+      <position name="l_0_thumb_proximal_HandPos" joint="l_0_thumb_proximal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.727875959"/>
+      <position name="l_1_thumb_middle_HandPos" joint="l_1_thumb_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.221730476"/>
+      <position name="l_2_thumb_distal_HandPos" joint="l_2_thumb_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_3_index_middle_HandPos" joint="l_3_index_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_4_index_distal_HandPos" joint="l_4_index_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_5_middle_middle_HandPos" joint="l_5_middle_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_6_middle_distal_HandPos" joint="l_6_middle_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_7_ring_middle_HandPos" joint="l_7_ring_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_8_ring_distal_HandPos" joint="l_8_ring_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_9_little_middle_HandPos" joint="l_9_little_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_10_little_distal_HandPos" joint="l_10_little_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_0_thumb_proximal_HandPos" joint="r_0_thumb_proximal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="-1.727875959 0"/>
+      <position name="r_1_thumb_middle_HandPos" joint="r_1_thumb_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.221730476"/>
+      <position name="r_2_thumb_distal_HandPos" joint="r_2_thumb_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_3_index_middle_HandPos" joint="r_3_index_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_4_index_distal_HandPos" joint="r_4_index_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_5_middle_middle_HandPos" joint="r_5_middle_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_6_middle_distal_HandPos" joint="r_6_middle_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_7_ring_middle_HandPos" joint="r_7_ring_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_8_ring_distal_HandPos" joint="r_8_ring_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_9_little_middle_HandPos" joint="r_9_little_middle" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_10_little_distal_HandPos" joint="r_10_little_distal" kp="10" kv="0.01" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == '1dof'}">
+      <position name="l_1_dof_gripper_moving_HandPos" joint="l_1_dof_gripper_moving" kp="20" kv="0.01" forcerange="-0.39 0.39" ctrlrange="0 1.74533"/>
+      <position name="r_1_dof_gripper_moving_HandPos" joint="r_1_dof_gripper_moving" kp="20" kv="0.01" forcerange="-0.39 0.39" ctrlrange="-1.74533 0"/>
+    </xacro:if>
+  </actuator>
+  <!-- ===================== sensor ===================== -->
+  <sensor>
+    <gyro site="base_link_imu_site" name="imu-pelvis-angular-velocity" cutoff="34.9" noise="0.0005"/>
+    <accelerometer site="base_link_imu_site" name="imu-pelvis-linear-acceleration" cutoff="157" noise="0.01"/>
+    <framequat name="imu-pelvis-quat" objtype="site" objname="base_link_imu_site"/>
+  </sensor>
+  <!-- ===================== keyframe ===================== -->
+  <keyframe>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'dummy' and not fixed_value}">
+      <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'dummy' and fixed_value}">
+      <key name="initial" qpos="0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'none' and not fixed_value}">
+      <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'none' and fixed_value}">
+      <key name="initial" qpos="0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'hand' and not fixed_value}">
+      <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'hand' and fixed_value}">
+      <key name="initial" qpos="0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'magnet' and not fixed_value}">
+      <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == 'magnet' and fixed_value}">
+      <key name="initial" qpos="0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == '1dof' and not fixed_value}">
+      <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and not parallel_value and end_effector_value == '1dof' and fixed_value}">
+      <key name="initial" qpos="0 0 0 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'dummy' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'dummy' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'none' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'none' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'hand' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'hand' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'magnet' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == 'magnet' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == '1dof' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'torso' and parallel_value and end_effector_value == '1dof' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'dummy' and not fixed_value}">
+      <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'dummy' and fixed_value}">
+      <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'none' and not fixed_value}">
+      <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'none' and fixed_value}">
+      <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'hand' and not fixed_value}">
+      <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'hand' and fixed_value}">
+      <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'magnet' and not fixed_value}">
+      <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == 'magnet' and fixed_value}">
+      <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == '1dof' and not fixed_value}">
+      <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and not parallel_value and end_effector_value == '1dof' and fixed_value}">
+      <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0"/>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'dummy' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'dummy' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'none' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'none' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'hand' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'hand' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'magnet' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == 'magnet' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == '1dof' and not fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="0 0 0.934 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis' and parallel_value and end_effector_value == '1dof' and fixed_value}">
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <key name="initial" qpos="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 -0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0.13 0 0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0 -0.13 0 0 0 -0.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+      </xacro:unless>
+    </xacro:if>
+  </keyframe>
+</mujoco>
