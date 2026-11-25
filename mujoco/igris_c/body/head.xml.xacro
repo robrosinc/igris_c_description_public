@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Head: neck -> head, eyes stereo cameras, RealSense D435i. Included inside torso by body/{torso,pelvis}_base. -->
+  <body name="neck" pos="0 0 0.357" quat="1 0 0 0">
+    <joint name="neck_yaw" type="hinge" ref="0.0" class="actuator_7" range="-1.221730476 1.221730476" axis="0 0 1"/>
+    <inertial pos="-0.00005 -0.00130 -0.00264" mass="0.310" fullinertia="0.00017 0.0001 0.00016 0.00000 0.00000 0.00001"/>
+    <geom name="neck_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="neck" class="visual"/>
+    <body name="head" pos="0 0 0" quat="1 0 0 0">
+      <joint name="neck_pitch" type="hinge" ref="0.0" class="actuator_7" range="-0.523598776 0.523598776" axis="0 1 0"/>
+      <inertial pos="0.02850 0.00290 0.12862" mass="1.468" fullinertia="0.00574 0.00727 0.00503 -0.00008 0.00025 0.00013"/>
+      <geom name="head_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="head" class="visual"/>
+      <!-- Every camera below is <frame> + <camera>: the frame mirrors the matching
+           *_link in urdf/<model>/body/head.urdf.xacro one for one (same pos, quat = that link's
+           rpy), so it is the ROS OPTICAL frame (+Z forward, +X right, +Y down); the camera
+           inside adds the single quat="0 1 0 0" (180 deg about X) that reaches MuJoCo's
+           convention (-Z view, +Y up). Nothing is recomposed by hand, and the ROS/MuJoCo
+           difference sits in exactly one attribute per camera.
+
+           Head stereo RGB pair, stitched into the single 1280x480 sensor/eyes_stereo stream
+           on the real robot, so resolution is that stream's per-eye half. fovy stays at the
+           MuJoCo default: these lens intrinsics are unmeasured. -->
+      <frame name="eyes_stereo_left" pos="0.095516 0.026076 0.121000" quat="0.557207747 -0.557207747 0.435338404 -0.435338404">
+        <camera name="eyes_stereo_left" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+      </frame>
+      <frame name="eyes_stereo_right" pos="0.095516 -0.026076 0.121000" quat="0.435338404 -0.435338404 0.557207747 -0.557207747">
+        <camera name="eyes_stereo_right" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+      </frame>
+      <!-- RealSense D435i. The frame tree is the d435_*_link chain of
+           urdf/<model>/body/head.urdf.xacro, nested the same way, so every offset below is the raw
+           number from its source rather than a composed one. See that file for each source.
+
+           fovy is the nominal datasheet FOV for the resolution igris_c_camera actually runs:
+           configs/camera.yaml has d435 resolution / ir_resolution / output_resolution all at
+           640x480, which is 4:3, NOT 16:9. Table 3-49 (D435/D435i):
+             Depth FOV VGA (4:3)  H:75 / V:62 / D:89  (NOT used, see below)
+             Color Camera FOV     H:69 / V:42 / D:77  -> fovy 42 for BOTH colour and depth
+           d435_depth uses COLOUR's 42, not depth's 62: align_depth: true makes rs2::align
+           rebuild the depth profile from the colour one (align.cpp:191-196), so the depth
+           the robot actually publishes is clipped to the colour FOV. The sensor's wider
+           75x62 cone only exists upstream of the alignment.
+           The IR pair uses Table 3-13 (Wide Left/Right Imager, D430) H:90 / V:64 / D:98 ->
+           fovy 64. The H:90 / V:63 figure in Table 3-49 is the IR PROJECTOR, not the imager.
+           Datasheet note 3: lens tolerance is about +-3 deg, so these are nominal, not the
+           per-unit intrinsics rs-enumerate-devices reports.
+
+           Min-Z at 640x480 is 175 mm (Table 4-11). That is a SENSOR limit, not a clip plane,
+           so it is recorded here rather than pushed into <visual><map znear>, which is a
+           multiplier of stat.extent and would move every camera's near plane. -->
+      <frame name="d435_center" pos="0.112677 0 0.159748" quat="0.891006524 0 0.453990500 0">
+        <site name="d435_center" size="0.004" rgba="0.2 0.2 0.8 0.3"/>
+        <frame name="d435_ir_left" pos="-0.0042 0.0175 0" quat="0.5 -0.5 0.5 -0.5">
+          <camera name="d435_ir_left" mode="fixed" resolution="640 480" fovy="64" quat="0 1 0 0"/>
+          <!-- The SENSOR's depth origin, mirroring d435_depth_link. A <site>, not a <frame>:
+               frames are compiler-only (they fold into their children and leave no mjModel
+               entry, so mj_name2id(mjOBJ_FRAME, ...) returns -1), whereas a site survives
+               into mjModel and is both queryable and drawable under Frame=Site. Zero offset
+               from this frame, per datasheet 4.8.1. It carries no camera on purpose: what
+               gets published is the ALIGNED depth, which renders from d435_color. -->
+          <site name="d435_depth" size="0.004" rgba="0.2 0.8 0.2 0.3"/>
+          <site name="d435_imu" pos="0.00552 -0.00510 -0.01174" size="0.004" rgba="0.8 0.2 0.2 0.3"/>
+        </frame>
+        <frame name="d435_color" pos="-0.0042 0.0325 0" quat="0.5 -0.5 0.5 -0.5">
+          <camera name="d435_color" mode="fixed" resolution="640 480" fovy="42" quat="0 1 0 0"/>
+          <!-- The depth camera renders from the COLOUR viewpoint on purpose, and this is
+               the one place the MuJoCo model and the URDF deliberately disagree: the URDF's
+               d435_depth_link stays on the left imager (the sensor's depth origin, datasheet
+               4.8.1), while what igris_c_camera PUBLISHES is aligned depth, which rs2::align
+               rebuilds with colour's intrinsics, colour's dimensions and an identity extrinsic
+               to colour (align.cpp:191-196). Rendering this from the imager with depth's own
+               fovy 62 would produce ~20 deg of scene the real aligned stream never carries.
+               This camera is therefore paired with d435_color_link, not d435_depth_link. -->
+          <camera name="d435_depth" mode="fixed" resolution="640 480" fovy="42" quat="0 1 0 0"/>
+        </frame>
+        <frame name="d435_ir_right" pos="-0.0042 -0.0325 0" quat="0.5 -0.5 0.5 -0.5">
+          <camera name="d435_ir_right" mode="fixed" resolution="640 480" fovy="64" quat="0 1 0 0"/>
+        </frame>
+      </frame>
+    </body>
+  </body>
+</mujoco>

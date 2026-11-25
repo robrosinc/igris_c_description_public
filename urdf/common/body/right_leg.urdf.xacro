@@ -1,0 +1,343 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). Right leg: hip -> knee -> ankle -> foot (ankle v1/v2), parallel ankle linkage.
+       Included by body/{torso,pelvis}_base. -->
+  <joint name="r_hip_pitch" type="revolute">
+    <parent link="pelvis"/>
+    <child link="r_hip_frame"/>
+    <origin xyz="-0.0115 -0.0897 -0.14" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.059488517" upper="0.523598776" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_hip_frame">
+    <inertial>
+      <mass value="1.894"/>
+      <origin xyz="0.00973 0.00102 0.00002"/>
+      <inertia ixx="0.00261" ixy="0.00001" ixz="0.00000" iyy="0.00267" iyz="0.00000" izz="0.00258"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_hip_roll" type="revolute">
+    <parent link="r_hip_frame"/>
+    <child link="r_hip_bracket"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-2.35619449" upper="0.331612558" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_hip_bracket">
+    <inertial>
+      <mass value="0.573"/>
+      <origin xyz="-0.01497 -0.00570 -0.03564"/>
+      <inertia ixx="0.00103" ixy="0.00006" ixz="0.00012" iyy="0.00226" iyz="-0.00006" izz="0.00206"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_hip_yaw" type="revolute">
+    <parent link="r_hip_bracket"/>
+    <child link="r_upper_leg"/>
+    <origin xyz="0.002 0 -0.076" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_upper_leg">
+    <inertial>
+      <mass value="4.813"/>
+      <origin xyz="-0.01286 0.00388 -0.10563"/>
+      <inertia ixx="0.03161" ixy="0.00007" ixz="-0.00101" iyy="0.03396" iyz="0.00084" izz="0.01135"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_knee_pitch" type="revolute">
+    <parent link="r_upper_leg"/>
+    <child link="r_lower_leg"/>
+    <origin xyz="-0.055 0 -0.263" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.28638132" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_lower_leg">
+    <inertial>
+      <mass value="3.212"/>
+      <origin xyz="0.01044 -0.00096 -0.12320"/>
+      <inertia ixx="0.02686" ixy="-0.00000" ixz="-0.00201" iyy="0.02845" iyz="0.00048" izz="0.00520"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_ankle_pitch" type="revolute">
+    <parent link="r_lower_leg"/>
+    <child link="r_ankle_frame"/>
+    <origin xyz="0.005 0 -0.34" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.698131701" upper="0.698131701" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="r_ankle_frame">
+    <inertial>
+      <mass value="0.084"/>
+      <origin xyz="0.00000 0.00000 0.00000"/>
+      <inertia ixx="0.00003" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00003"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Ankle v1 foot: original. -->
+  <xacro:unless value="${ankle_version_value == 'v2'}">
+    <joint name="r_ankle_roll" type="revolute">
+      <parent link="r_ankle_frame"/>
+      <child link="r_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_foot">
+      <inertial>
+        <mass value="0.579"/>
+        <origin xyz="0.02167 0.00000 -0.05193"/>
+        <inertia ixx="0.00045" ixy="0.00000" ixz="0.00024" iyy="0.00166" iyz="0.00000" izz="0.00158"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:unless>
+  <!-- Ankle v2 foot: reinforced, heavier, shifted COM. -->
+  <xacro:if value="${ankle_version_value == 'v2'}">
+    <joint name="r_ankle_roll" type="revolute">
+      <parent link="r_ankle_frame"/>
+      <child link="r_foot"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-0.34906585" upper="0.34906585" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_foot">
+      <inertial>
+        <mass value="0.634"/>
+        <origin xyz="0.01282 0.00000 -0.04623"/>
+        <inertia ixx="0.00073" ixy="0.00000" ixz="0.00047" iyy="0.00256" iyz="0.00000" izz="0.00244"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:if>
+  <!-- ===================== Parallel ankle linkage (parallel:=true) ===================== -->
+  <xacro:if value="${parallel_value}">
+    <link name="dummy_5_x"/>
+    <link name="dummy_5_y"/>
+    <link name="dummy_6_x"/>
+    <link name="dummy_6_y"/>
+    <link name="r_ankle_flange_out">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 0.00742 -0.00003"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_parallel_out">
+      <inertial>
+        <mass value="0.130"/>
+        <origin xyz="0.00167061079 0.00314565753 -0.122969956"/>
+        <inertia ixx="0.00103804073" ixy="-3.52837998e-07" ixz="1.38859311e-05" iyy="0.00103907695" iyz="2.62358635e-05" izz="3.6539239e-06"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_flange_in">
+      <inertial>
+        <mass value="0.026"/>
+        <origin xyz="-0.01128 -0.00742 -0.00006"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00002" iyz="0.00000" izz="0.00001"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_ankle_parallel_in">
+      <inertial>
+        <mass value="0.083"/>
+        <origin xyz="0.00158647782 -0.00296668666 -0.0680131771"/>
+        <inertia ixx="0.000226683331" ixy="2.23711499e-07" ixz="5.24570629e-06" iyy="0.000227582794" iyz="-9.69157748e-06" izz="2.57692963e-06"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_ankle_flange_in" type="revolute">
+      <parent link="r_lower_leg"/>
+      <child link="r_ankle_flange_in"/>
+      <origin xyz="0.00500 0.03775 -0.18800" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_x" type="revolute">
+      <parent link="r_ankle_flange_in"/>
+      <child link="dummy_5_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00019" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_y" type="revolute">
+      <parent link="dummy_5_x"/>
+      <child link="dummy_5_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_in_z" type="revolute">
+      <parent link="dummy_5_y"/>
+      <child link="r_ankle_parallel_in"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_flange_out" type="revolute">
+      <parent link="r_lower_leg"/>
+      <child link="r_ankle_flange_out"/>
+      <origin xyz="0.00500 -0.03775 -0.08000" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_x" type="revolute">
+      <parent link="r_ankle_flange_out"/>
+      <child link="dummy_6_x"/>
+      <origin xyz="-0.03750 0.00000 -0.00001" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_y" type="revolute">
+      <parent link="dummy_6_x"/>
+      <child link="dummy_6_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_ankle_parallel_out_z" type="revolute">
+      <parent link="dummy_6_y"/>
+      <child link="r_ankle_parallel_out"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:if>
+</robot>

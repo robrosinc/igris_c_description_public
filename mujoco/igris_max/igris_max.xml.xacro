@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro" model="igris_max">
+  <!-- IGRIS-MAX MJCF entry. Build parameters, compiler/size/visual/option and <sensor> inline;
+       default, asset, equality, actuator, keyframe and body subtrees are includes. -->
+  <!-- ===================== 0. Build parameters ===================== -->
+  <xacro:arg name="base_type" default="torso"/>
+  <xacro:arg name="parallel" default="true"/>
+  <xacro:arg name="end_effector" default="hand"/>
+  <xacro:arg name="fixed" default="false"/>
+  <xacro:arg name="ankle_version" default="v1"/>
+  <xacro:arg name="wrist_version" default="v1"/>
+  <!-- mesh_dir: MuJoCo resolves meshdir relative to the FILE, so the default only holds
+       while this file sits at mujoco/<model>/. The installed tree is flat, so launch passes
+       an absolute <description.config_root_dir>/meshes/ instead. -->
+  <xacro:arg name="mesh_dir" default="../../meshes/"/>
+  <xacro:arg name="battery_type" default="original"/>
+  <xacro:property name="base_type_value" value="$(arg base_type)"/>
+  <xacro:property name="end_effector_value" value="$(arg end_effector)"/>
+  <xacro:property name="parallel_value" value="${'$(arg parallel)'.lower() == 'true'}"/>
+  <xacro:property name="fixed_value" value="${'$(arg fixed)'.lower() == 'true'}"/>
+  <!-- Root pose. fixed:=false: free root at the world origin; fixed:=true: root welded to the world
+       1.5 m up and pitched 0.35 rad so the legs hang clear of the floor. -->
+  <xacro:property name="root_pos" value="${'0.0 0.0 1.5' if fixed_value else '0.0 0.0 0.0'}"/>
+  <xacro:property name="root_euler" value="${'0 0.35 0' if fixed_value else '0 0 0'}"/>
+  <!-- ankle_version: v1 = original foot, v2 = reinforced foot (heavier, shifted COM, new PLA connect anchors). Both: mesh visual, box collision. -->
+  <xacro:property name="ankle_version_value" value="$(arg ankle_version)"/>
+  <!-- wrist_version: v1 = intersecting roll/pitch axes, universal+hinge pair on the parallel link.
+       v2 = offset roll/pitch axes, and that pair collapses into a single ball joint, so v1 nests
+       *_wrist_parallel_* under an extra *_wrist_universal_* body that v2 does not have. The equality
+       body pairs are the same in both versions; below the wrist mount only geometry differs. -->
+  <xacro:property name="wrist_version_value" value="$(arg wrist_version)"/>
+  <!-- battery_type: original = two hot-swap igris_max packs, legacy = one carried-over igris_c pack.
+       Swaps the torso mesh and inertial only; no joint or frame changes. -->
+  <xacro:property name="battery_type_value" value="$(arg battery_type)"/>
+  <!-- ===================== 1. Simulation header: compiler / size / visual / option / default / asset ===================== -->
+  <compiler angle="radian" meshdir="$(arg mesh_dir)" balanceinertia="false"/>
+  <size njmax="8000" nconmax="4000"/>
+  <!-- Offscreen framebuffer for camera rendering. Must be >= the largest rendered frame or
+       mjr_render silently clips; 1280x720 covers a 1280x480 stereo stitch with headroom. -->
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+  <!-- Sim-rate tuning (2100 Hz). timestep = 1/2100; paired with MUJOCO_DATA_DECIMATION=7 to keep
+       publish at exactly 300 Hz (2100/7) and MUJOCO_COMMAND_DELAY=10 for ~5 ms latency. Must stay a
+       multiple of 300 Hz; see the table in ros_controller.h.
+       Lower bound: keyframe 0 has a ~5 mm geometric loop-closure residual the <connect> constraints
+       cannot fully close, so timesteps above ~1/1800 diverge at startup (1/1500 flies). 2100 Hz keeps
+       margin. connect/equality solref timeconst is 0.002 (>= ~2x timestep; contact solref 0.01 unchanged).
+       Note: dynamic (walking/impact) stability at 2100 Hz should still be validated on hardware runs. -->
+  <option timestep="0.00047619048" iterations="100" tolerance="1e-7" solver="Newton" jacobian="dense" cone="elliptic" noslip_iterations="1" noslip_tolerance="1e-7"/>
+  <xacro:include filename="defaults.xml.xacro"/>
+  <xacro:include filename="assets.xml.xacro"/>
+  <!-- ===================== 2. Model tree (worldbody) ===================== -->
+  <worldbody>
+    <geom name="floor" size="10 10 .05" type="plane" material="grid" condim="3" euler="0 0. 0"/>
+    <light directional="true" diffuse=".8 .8 .8" pos="0 0 10" dir="0.5 0.5 -5"/>
+    <light directional="true" diffuse=".3 .3 .3" pos="10 0 0" dir="-10 0 0"/>
+    <xacro:if value="${base_type_value == 'torso'}">
+      <body name="torso" pos="${root_pos}" euler="${root_euler}" childclass="robot">
+        <xacro:unless value="${fixed_value}">
+          <freejoint name="floating_base"/>
+        </xacro:unless>
+        <xacro:include filename="body/torso_base.xml.xacro"/>
+      </body>
+    </xacro:if>
+    <xacro:if value="${base_type_value == 'pelvis'}">
+      <body name="pelvis" pos="${root_pos}" euler="${root_euler}" childclass="robot">
+        <xacro:unless value="${fixed_value}">
+          <freejoint name="floating_base"/>
+        </xacro:unless>
+        <xacro:include filename="body/pelvis_base.xml.xacro"/>
+      </body>
+    </xacro:if>
+  </worldbody>
+  <!-- ===================== 3. equality / actuator / sensor / keyframe ===================== -->
+  <xacro:include filename="equality.xml.xacro"/>
+  <xacro:include filename="actuator.xml.xacro"/>
+  <!-- <sensor>: torso IMU. -->
+  <sensor>
+    <gyro site="torso_imu_link" name="imu-torso-angular-velocity" cutoff="34.9" noise="0.0005"/>
+    <accelerometer site="torso_imu_link" name="imu-torso-linear-acceleration" cutoff="157" noise="0.01"/>
+    <framequat name="imu-torso-quat" objtype="site" objname="torso_imu_link"/>
+  </sensor>
+  <xacro:include filename="keyframe.xml.xacro"/>
+</mujoco>

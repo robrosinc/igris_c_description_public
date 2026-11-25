@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). Left end effector variants: five-finger hand, magnet, 1-DoF gripper (end_effector:=hand|magnet|1dof). Included inside l_wrist_mount by body/left_arm. -->
+  <!-- ===================== Hand (end_effector:=hand) ===================== -->
+  <xacro:if value="${end_effector_value == 'hand'}">
+    <body name="l_palm" pos="0 0.0109 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" quat="1 0 0 0">
+      <inertial pos="-0.00142365547 0.000963296237 -0.0426696243" mass="0.200" fullinertia="0.000124220648 0.000226968843 0.000140441727 -4.41311919e-06 8.96115401e-06 1.00047406e-05"/>
+      <geom name="l_palm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_palm" class="collision"/>
+      <geom name="l_palm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_palm" class="visual"/>
+      <!-- <frame> mirrors left_hand_camera_link in the hand section of urdf/<model>/body/left_end_effector.urdf.xacro
+           one for one: same pos, and a quat that is that link's rpy. The frame is therefore the ROS
+           OPTICAL frame, and the <camera> inside it carries the single quat="0 1 0 0" (180 deg
+           about X) that turns it into MuJoCo's camera frame (-Z view, +Y up). Every camera in
+           this repo is built this way, so the ROS/MuJoCo difference lives in exactly one
+           attribute and nothing has to be recomposed by hand.
+           The name is shared with the magnet and 1dof variants: end_effector selects exactly
+           one, so one camera of this name exists per expansion, matching the single
+           sensor/left_hand stream igris_c_camera publishes for whichever EE is fitted.
+           resolution = igris_c_camera configs/camera.yaml hand_mono output_resolution. focal /
+           principal are NOT set and fovy therefore stays at the MuJoCo default: the real lens
+           intrinsics are unmeasured, and an invented value here would read as calibrated. -->
+      <frame name="left_hand_camera" pos="-0.024420 -0.010317 -0.034793" quat="0.420476834 0.872581499 0.111374802 0.222253040">
+        <camera name="left_hand_camera" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+      </frame>
+      <body name="l_thumb_proximal" pos="0.026 -0.0132 -0.0299" quat="0.043619 0.999048 0 0">
+        <joint name="l_0_thumb_proximal" class="dynamixel_xc330_t288" axis="0 0 1" range="0 1.727875959"/>
+        <inertial pos="0.00736791773 3.04133652e-05 0.0103050397" mass="0.01" fullinertia="8.13996704e-07 1.65118074e-06 1.76073249e-06 -3.2215765e-09 -2.29390099e-07 -1.46315807e-09"/>
+        <geom name="l_thumb_proximal_collision" type="mesh" mesh="l_thumb_proximal" class="collision"/>
+        <geom name="l_thumb_proximal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_proximal" class="visual"/>
+        <body name="l_thumb_middle" pos="0.0230 0.0036 0.015" quat="0.579228 -0.405580 0.405580 -0.579228">
+          <joint name="l_1_thumb_middle" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.221730476"/>
+          <inertial pos="0.00153332283 -0.000579271121 0.0206095712" mass="0.008" fullinertia="1.48378387e-06 1.6201774e-06 5.47250557e-07 -8.43763053e-09 1.26993277e-07 4.97793156e-08"/>
+          <geom name="l_thumb_middle_collision" type="mesh" mesh="l_thumb_middle" class="collision"/>
+          <geom name="l_thumb_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_middle" class="visual"/>
+          <body name="l_thumb_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+            <joint name="l_2_thumb_distal" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+            <inertial pos="7.99862028e-05 -0.000459648481 0.0168354101" mass="0.006" fullinertia="9.09415612e-07 9.38299805e-07 2.67474408e-07 -2.88053857e-10 8.8005802e-09 -3.25375726e-08"/>
+            <geom name="l_thumb_distal_collision" type="mesh" mesh="l_thumb_distal" class="collision"/>
+            <geom name="l_thumb_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="l_thumb_distal" class="visual"/>
+          </body>
+        </body>
+      </body>
+      <body name="l_index_middle" pos="0.0305 0.002 -0.101" quat="0 0 -1 0">
+        <joint name="l_3_index_middle" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="-2.12973158e-06 -0.000606375566 0.019772219" mass="0.008" fullinertia="1.76481614e-06 1.813998e-06 4.34815829e-07 -4.6203336e-11 4.76122273e-11 5.15864199e-08"/>
+        <geom name="l_index_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_index_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle" class="visual"/>
+        <body name="l_index_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_4_index_distal" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="7.55064321e-07 -0.000539511032 0.0179878452" mass="0.006" fullinertia="8.75037334e-07 8.98295706e-07 2.69543245e-07 -5.88858205e-11 -2.62959743e-10 -2.7494979e-08"/>
+          <geom name="l_index_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_index_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal" class="visual"/>
+        </body>
+      </body>
+      <body name="l_middle_middle" pos="0.0085 0.002 -0.101" quat="0 0 -1 0">
+        <joint name="l_5_middle_middle" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="-2.12973158e-06 -0.000606375566 0.019772219" mass="0.008" fullinertia="1.76481614e-06 1.813998e-06 4.34815829e-07 -4.6203336e-11 4.76122273e-11 5.15864199e-08"/>
+        <geom name="l_middle_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_middle_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle" class="visual"/>
+        <body name="l_middle_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_6_middle_distal" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="7.55064321e-07 -0.000539511032 0.0179878452" mass="0.006" fullinertia="8.75037334e-07 8.98295706e-07 2.69543245e-07 -5.88858205e-11 -2.62959743e-10 -2.7494979e-08"/>
+          <geom name="l_middle_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_middle_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal" class="visual"/>
+        </body>
+      </body>
+      <body name="l_ring_middle" pos="-0.0139 0.001 -0.099" quat="0.01745 0.01745 -0.999695 -0.000305">
+        <joint name="l_7_ring_middle" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="-2.12973158e-06 -0.000606375566 0.019772219" mass="0.008" fullinertia="1.76481614e-06 1.813998e-06 4.34815829e-07 -4.6203336e-11 4.76122273e-11 5.15864199e-08"/>
+        <geom name="l_ring_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_ring_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle" class="visual"/>
+        <body name="l_ring_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_8_ring_distal" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="7.55064321e-07 -0.000539511032 0.0179878452" mass="0.006" fullinertia="8.75037334e-07 8.98295706e-07 2.69543245e-07 -5.88858205e-11 -2.62959743e-10 -2.7494979e-08"/>
+          <geom name="l_ring_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_ring_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal" class="visual"/>
+        </body>
+      </body>
+      <body name="l_little_middle" pos="-0.0362 -0.0012 -0.0942" quat="0.043612 0.026168 -0.998706 -0.000228">
+        <joint name="l_9_little_middle" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+        <inertial pos="-2.12973158e-06 -0.000606375566 0.019772219" mass="0.008" fullinertia="1.76481614e-06 1.813998e-06 4.34815829e-07 -4.6203336e-11 4.76122273e-11 5.15864199e-08"/>
+        <geom name="l_little_middle_collision" type="mesh" mesh="finger_middle" class="collision"/>
+        <geom name="l_little_middle_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_middle" class="visual"/>
+        <body name="l_little_distal" pos="0 -0.001 0.04" quat="1 0 0 0">
+          <joint name="l_10_little_distal" class="dynamixel_xc330_t288" axis="1 0 0" range="0 1.570796327"/>
+          <inertial pos="7.55064321e-07 -0.000539511032 0.0179878452" mass="0.006" fullinertia="8.75037334e-07 8.98295706e-07 2.69543245e-07 -5.88858205e-11 -2.62959743e-10 -2.7494979e-08"/>
+          <geom name="l_little_distal_collision" type="mesh" mesh="finger_distal" class="collision"/>
+          <geom name="l_little_distal_visual" type="mesh" rgba="0.5 0.5 0.5 1" mesh="finger_distal" class="visual"/>
+        </body>
+      </body>
+    </body>
+  </xacro:if>
+  <!-- ===================== Magnet (end_effector:=magnet) ===================== -->
+  <xacro:if value="${end_effector_value == 'magnet'}">
+    <!-- See the magnet section of urdf/<model>/body/left_end_effector.urdf.xacro for the inertial
+         provenance. The branch this came from dropped the off-diagonal iyz in its fullinertia; it is kept here. -->
+    <body name="l_magnet" pos="0 0 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" quat="1 0 0 0">
+      <inertial pos="0.00005 0.02385 -0.05845" mass="0.244" fullinertia="0.00036 0.00025 0.00024 0 0 0.00005"/>
+      <geom name="l_magnet_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet" class="collision"/>
+      <geom name="l_magnet_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet" material="random" class="visual"/>
+      <!-- No URDF counterpart: the URDF magnet variant declares no camera link. The camera name matches
+           left_hand_camera_link of the hand and 1dof variants; end_effector selects exactly one variant,
+           so the name is unique per expansion (see the hand variant).
+           The magnet CAD export does NOT use the ROS-optical mapping the 1dof camera does.
+           resolution = camera.yaml hand_mono output_resolution; fovy stays at the MuJoCo default
+           because this lens is unmeasured.
+           UNVERIFIED: this view axis runs across the gripper body rather than out along the
+           approach axis, and the magnet variant has no counterpart in the reference model to
+           cross-check. Confirm in the viewer. -->
+      <frame name="left_hand_camera" pos="-0.00001126 0.00372014 -0.10086950" quat="0.707106781 0.707106781 0 0">
+        <camera name="left_hand_camera" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+      </frame>
+      <!-- Rotating magnet head, the motor DOF added on top of the electromagnet. The joint frame
+           is the CAD one (45 deg about x); igris_c_hand drives it on slot 1 (right, id 12) / slot 7
+           (left, id 22), while the electromagnet itself is the binary slot 0 / 6. -->
+      <body name="l_magnet_head" pos="0 -0.019856853 -0.070583262" quat="0.923879564 -0.382683357 0 0">
+        <!-- One-sided limits, mirrored L/R, exactly as the 1-dof gripper does it: zero is
+             one end of travel and the sign of the span says which way the side turns. The
+             igris_c_mujoco hand mapping derives q=0 from the limit nearest zero, so this is
+             what makes a single q command move both heads as mirror images, matching the
+             mirrored servo mounting (ids 12 / 22). 340 deg total; igris_c_hand carries no
+             direction sign of its own - it calibrates against the physical stops. -->
+        <joint name="l_magnet_rotate" class="dynamixel_xm430_w210" axis="0 0 1" range="-5.93412 0"/>
+        <inertial pos="-0.00010 0.00000 -0.01252" mass="0.175" fullinertia="0.00003 0.00003 0.00004 0 0 0"/>
+        <geom name="l_magnet_head_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet_head" class="collision"/>
+        <!-- Working face of the electromagnet, flush with the mesh face at z=-0.025.
+             A BOX, although the real pole face is a 40 mm circle: MuJoCo's cylinder-box
+             collider yields a single contact point, which the target pivots off (measured:
+             0 kgf for a cylinder face against 25 kgf for this box). Box-box yields the
+             4-point manifold the hold needs. The size is the square INSCRIBED in that
+             circle (28.28 mm across, 20/sqrt(2) half-extent), so the face never reaches
+             outside the real pole; the hold does not depend on its area anyway - MuJoCo
+             splits the actuator's gain across whatever contacts exist.
+             margin/gap give the actuator its reach, about margin - 2 mm: 8 mm here pulls a
+             target in across a 6 mm gap. gap=margin keeps the band force-free, so ordinary
+             collision is unchanged. -->
+        <geom name="l_magnet_face" type="box" size="0.014142 0.014142 0.002" pos="0 0 -0.023" class="collision" margin="0.008" gap="0.008"/>
+        <geom name="l_magnet_head_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_magnet_head" material="random" class="visual"/>
+      </body>
+    </body>
+  </xacro:if>
+  <!-- ===================== 1-DoF gripper (end_effector:=1dof) ===================== -->
+  <xacro:if value="${end_effector_value == '1dof'}">
+    <body name="l_1_dof_gripper_fixed" pos="0 0 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" quat="1 0 0 0">
+      <inertial pos="0.00396 0.00377 -0.05310" mass="0.271" fullinertia="0.00033 0.00040 0.00021 -0.00001 -0.00003 -0.00004"/>
+      <geom name="l_1_dof_gripper_fixed_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_fixed" class="collision"/>
+      <geom name="l_1_dof_gripper_fixed_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_fixed" material="random" class="visual"/>
+      <!-- <frame> mirrors left_hand_camera_link in the 1dof section of urdf/<model>/body/left_end_effector.urdf.xacro;
+           same frame + camera split as the hand variant, and the same shared name. Because the link is
+           the optical frame, its rpy is the CAD export verbatim. The pair is an exact mirror.
+           resolution = camera.yaml hand_mono output_resolution; fovy stays at the MuJoCo default
+           because this lens is unmeasured. -->
+      <frame name="left_hand_camera" pos="0.050416 0.020241 -0.052538" quat="0.016904878 -0.711438481 0.643645333 0.281585153">
+        <camera name="left_hand_camera" mode="fixed" resolution="640 480" quat="0 1 0 0"/>
+      </frame>
+      <!-- rest (q=0) = open: body pre-rolled by +travel (quat=+100deg about X) and axis flipped so q increases toward closed -->
+      <body name="l_1_dof_gripper_moving" pos="0 0.02625 -0.04225" quat="0.642788 0.766044 0 0">
+        <joint name="l_1_dof_gripper_moving" type="hinge" ref="0.0" class="dynamixel_xm430_w210" range="0 1.74533" limited="true" axis="-1 0 0"/>
+        <inertial pos="-0.00028 -0.00857 -0.04908" mass="0.093" fullinertia="0.00007 0.00009 0.00004 0.00000 0.00000 -0.00001"/>
+        <geom name="l_1_dof_gripper_moving_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_moving" class="collision"/>
+        <geom name="l_1_dof_gripper_moving_visual" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="l_1_dof_gripper_moving" material="random" class="visual"/>
+      </body>
+    </body>
+  </xacro:if>
+</mujoco>

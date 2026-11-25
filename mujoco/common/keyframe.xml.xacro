@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). <keyframe> section. Included last by <model>.xml.xacro.
+       key "initial" is the home pose: hip_pitch -0.15, knee_pitch 0.3, ankle_pitch -0.15,
+       shoulder_pitch 0.13, shoulder_roll +0.13 (left) / -0.13 (right), elbow_pitch -0.3; every
+       other hinge 0, every ball joint identity "1 0 0 0".
+       qpos follows the joint order of the body tree, so the vector is assembled from one segment
+       per part, in the order the body/ files nest. Each segment comment lists its joints in order;
+       _bl = backlash joint. A segment that a variant does not have expands to nothing. -->
+  <!-- root: freejoint xyz + quat. The pelvis root body sits lower than the torso root body. -->
+  <xacro:property name="q_root" value="${'' if fixed_value else ('0 0 1 1 0 0 0' if base_type_value == 'torso' else '0 0 0.934 1 0 0 0')}"/>
+  <!-- waist chain: yaw yaw_bl roll roll_bl pitch pitch_bl (torso base) / pitch pitch_bl roll roll_bl yaw yaw_bl (pelvis base) -->
+  <xacro:property name="q_waist" value="0 0 0 0 0 0"/>
+  <!-- waist 4-bar (parallel): l_flange l_parallel(ball) r_flange r_parallel(ball) -->
+  <xacro:property name="q_waist_links" value="${'0 1 0 0 0 0 1 0 0 0' if parallel_value else ''}"/>
+  <!-- ankle 4-bar (parallel): flange_out parallel_out(ball) flange_in parallel_in(ball) -->
+  <xacro:property name="q_ankle_links" value="${'0 1 0 0 0 0 1 0 0 0' if parallel_value else ''}"/>
+  <!-- leg: hip_pitch bl hip_roll bl hip_yaw bl knee_pitch bl ankle_pitch bl ankle_roll bl, then ankle 4-bar. Same for both legs. -->
+  <xacro:property name="q_leg" value="-0.15 0 0 0 0 0 0.3 0 -0.15 0 0 0 ${q_ankle_links}"/>
+  <!-- wrist 4-bar on the forearm (parallel): flange_front rod_front flange_back rod_back connector_front connector_back -->
+  <xacro:property name="q_wrist_links" value="${'0 0 0 0 0 0' if parallel_value else ''}"/>
+  <!-- wrist output: roll roll_bl pitch pitch_bl -->
+  <xacro:property name="q_wrist" value="0 0 0 0"/>
+  <!-- end effector: hand = 11 finger joints, magnet = magnet_rotate, 1dof = gripper_moving, dummy/none = nothing -->
+  <xacro:property name="q_ee" value="${'0 0 0 0 0 0 0 0 0 0 0' if end_effector_value == 'hand' else ('0' if end_effector_value in ('magnet', '1dof') else '')}"/>
+  <!-- wrist 4-bar on the mount (parallel): v1 universal_front parallel_front universal_back parallel_back; v2 parallel_front(ball) parallel_back(ball) -->
+  <xacro:property name="q_wrist_mount" value="${('1 0 0 0 1 0 0 0' if wrist_version_value == 'v2' else '0 0 0 0') if parallel_value else ''}"/>
+  <!-- arm: shoulder_pitch bl shoulder_roll bl shoulder_yaw bl elbow_pitch bl wrist_yaw bl, then forearm 4-bar, wrist, end effector, mount 4-bar -->
+  <xacro:property name="q_arm_l" value="0.13 0 0.13 0 0 0 -0.3 0 0 0 ${q_wrist_links} ${q_wrist} ${q_ee} ${q_wrist_mount}"/>
+  <xacro:property name="q_arm_r" value="0.13 0 -0.13 0 0 0 -0.3 0 0 0 ${q_wrist_links} ${q_wrist} ${q_ee} ${q_wrist_mount}"/>
+  <!-- head: neck_yaw neck_pitch -->
+  <xacro:property name="q_head" value="0 0"/>
+  <keyframe>
+    <!-- torso base: torso -> waist chain -> pelvis -> legs; arms and head hang off the torso. -->
+    <xacro:if value="${base_type_value == 'torso'}">
+      <key name="initial" qpos="${q_root} ${q_waist} ${q_waist_links} ${q_leg} ${q_leg} ${q_arm_l} ${q_arm_r} ${q_head}"/>
+    </xacro:if>
+    <!-- pelvis base: pelvis -> legs, then the inverted waist chain -> torso -> arms, head. -->
+    <xacro:if value="${base_type_value == 'pelvis'}">
+      <key name="initial" qpos="${q_root} ${q_leg} ${q_leg} ${q_waist_links} ${q_waist} ${q_arm_l} ${q_arm_r} ${q_head}"/>
+    </xacro:if>
+  </keyframe>
+</mujoco>

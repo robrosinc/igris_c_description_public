@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). <equality> section: parallel waist/ankle/wrist loop closures. Included by <model>.xml.xacro after <worldbody>. -->
+  <xacro:if value="${parallel_value}">
+    <equality>
+      <connect body1="l_waist_parallel" body2="waist_frame" anchor="0.00167 0.0035 0.05987" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      <connect body1="r_waist_parallel" body2="waist_frame" anchor="0.00167 -0.0035 0.05987" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      <xacro:unless value="${ankle_version_value == 'v2'}">
+        <connect body1="l_ankle_parallel_out" body2="l_foot" anchor="0.00350 -0.00675 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_ankle_parallel_in" body2="l_foot" anchor="0.00350 0.00675 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_out" body2="r_foot" anchor="0.00350 0.00675 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_in" body2="r_foot" anchor="0.00350 -0.00675 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:unless>
+      <xacro:if value="${ankle_version_value == 'v2'}">
+        <connect body1="l_ankle_parallel_out" body2="l_foot" anchor="0.00150 -0.00775 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_ankle_parallel_in" body2="l_foot" anchor="0.00150 0.00775 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_out" body2="r_foot" anchor="0.00150 0.00775 -0.25989" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_ankle_parallel_in" body2="r_foot" anchor="0.00150 -0.00775 -0.15181" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:if>
+      <!-- Two loops per side, same body pairs in both versions: the planar loop closes rod -> connector,
+           the spatial loop closes connector -> parallel. Only the anchors differ, and anchor is expressed
+           in body1's frame. -->
+      <xacro:if value="${wrist_version_value == 'v2'}">
+        <connect body1="l_wrist_rod_front" body2="l_wrist_connector_front" anchor="0 -0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_back" body2="l_wrist_connector_back" anchor="0 -0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_front" body2="r_wrist_connector_front" anchor="0 0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_back" body2="r_wrist_connector_back" anchor="0 0.00688 -0.13082" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_front" body2="l_wrist_parallel_front" anchor="-0.0115 0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_back" body2="l_wrist_parallel_back" anchor="0.0115 0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_front" body2="r_wrist_parallel_front" anchor="-0.0115 -0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_back" body2="r_wrist_parallel_back" anchor="0.0115 -0.032097 -0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:if>
+      <xacro:unless value="${wrist_version_value == 'v2'}">
+        <connect body1="l_wrist_connector_front" body2="l_wrist_parallel_front" anchor="0.0 0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_connector_back" body2="l_wrist_parallel_back" anchor="0.0 0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_front" body2="r_wrist_parallel_front" anchor="0.0 -0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_connector_back" body2="r_wrist_parallel_back" anchor="0.0 -0.03159 0.005098" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_front" body2="l_wrist_connector_front" anchor="0.0 -0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="l_wrist_rod_back" body2="l_wrist_connector_back" anchor="0.0 -0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_front" body2="r_wrist_connector_front" anchor="0.0 0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+        <connect body1="r_wrist_rod_back" body2="r_wrist_connector_back" anchor="0.0 0.007711 -0.123760" solimp="0.9 1.0 0.001 0.5 2" solref="0.002 1"/>
+      </xacro:unless>
+    </equality>
+  </xacro:if>
+</mujoco>

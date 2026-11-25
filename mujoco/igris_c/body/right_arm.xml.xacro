@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Right arm: shoulder -> elbow -> forearm -> wrist (v1/v2), parallel wrist linkage, end-effector dispatch. Included inside torso by body/{torso,pelvis}_base. -->
+  <body name="r_shoulder_frame" pos="0 -0.171 0.266" quat="1 0 0 0">
+    <joint name="r_shoulder_pitch" type="hinge" ref="0.0" class="actuator_60" range="-3.141592654 1.047197551" axis="0 1 0"/>
+    <joint name="r_shoulder_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+    <inertial pos="-0.00458 -0.00011 0.04499" mass="1.105" fullinertia="0.00181 0.00180 0.00101 0.00000 -0.00008 0.00000"/>
+    <geom name="r_shoulder_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_frame" class="visual"/>
+    <geom name="r_shoulder_frame_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_frame" class="collision"/>
+    <body name="r_shoulder_bracket" pos="0 0 0" quat="1 0 0 0">
+      <joint name="r_shoulder_roll" type="hinge" ref="0.0" class="actuator_60" range="-3.141592654 0.174532925" axis="1 0 0"/>
+      <joint name="r_shoulder_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+      <inertial pos="0.01754 -0.02514 0.00000" mass="0.253" fullinertia="0.00006 0.00034 0.00035 -0.00003 0.00000 -0.00000"/>
+      <geom name="r_shoulder_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_bracket" class="visual"/>
+      <geom name="r_shoulder_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_shoulder_bracket" class="collision"/>
+      <body name="r_upper_arm" pos="0 0 0" quat="1 0 0 0">
+        <joint name="r_shoulder_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+        <joint name="r_shoulder_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+        <inertial pos="-0.00169 0.00639 -0.10638" mass="2.144" fullinertia="0.00966 0.00981 0.00217 0.00001 -0.00010 0.00034"/>
+        <geom name="r_upper_arm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_upper_arm" class="visual"/>
+        <body name="r_elbow_bracket" pos="0.01 0 -0.197" quat="1 0 0 0">
+          <joint name="r_elbow_pitch" type="hinge" ref="0.0" class="actuator_60" range="-2.094395102 0" axis="0 1 0"/>
+          <joint name="r_elbow_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 1 0"/>
+          <inertial pos="0.00544 -0.00380 -0.03838" mass="0.137" fullinertia="0.00008 0.00010 0.00004 0.00000 -0.00001 0.00001"/>
+          <geom name="r_elbow_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_elbow_bracket" class="visual"/>
+          <body name="r_forearm" pos="-0.01 0 -0.05" quat="1 0 0 0">
+            <joint name="r_wrist_yaw" type="hinge" ref="0.0" class="actuator_8" range="-1.570796327 1.570796327" axis="0 0 1"/>
+            <joint name="r_wrist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 0 1"/>
+            <!-- The hand variant mounts a different forearm assembly, so its inertial
+                 differs; every other end_effector keeps the base one. -->
+            <xacro:if value="${end_effector_value == 'hand'}">
+              <inertial pos="0.00007 -0.00046 -0.08808" mass="2.395" fullinertia="0.009823 0.010713 0.003128 -0.000001 0.000021 -0.000109"/>
+            </xacro:if>
+            <xacro:unless value="${end_effector_value == 'hand'}">
+              <inertial pos="0.00000 -0.00096 -0.08279" mass="2.212" fullinertia="0.008905 0.009782 0.003011 0.000000 0.000007 -0.000199"/>
+            </xacro:unless>
+            <geom name="r_forearm_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_forearm" class="collision"/>
+            <geom name="r_forearm_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_forearm" class="visual"/>
+            <!-- Dummy end effector (end_effector:=dummy): sphere mass on the forearm.
+                 end_effector:=none adds nothing; hand, magnet and 1dof live in body/right_end_effector
+                 (included in r_wrist_mount below). -->
+            <xacro:if value="${end_effector_value == 'dummy'}">
+              <body name="r_hand_dummy" pos="0 0 0" quat="1 0 0 0">
+                <inertial pos="0.0091 -0.00219 -0.34189" mass="0.150" fullinertia="0.00081 0.00117 0.00042 -0.00004 -0.00012 -0.00005"/>
+                <geom name="r_hand_dummy_collision" pos="0 -0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" density="0" class="collision"/>
+                <geom name="r_hand_dummy_visual" pos="0 -0.0109 -0.3" quat="1 0 0 0" type="sphere" size="0.05" material="random" class="visual"/>
+              </body>
+            </xacro:if>
+            <!-- Parallel wrist forearm linkage (parallel:=true) -->
+            <xacro:if value="${parallel_value}">
+              <!-- v2: planar four-bar (flange -> rod) plus the spatial four-bar crank (connector), whose loop
+                   closes against the parallel link carried by the mount. Body and joint names match v1, so the
+                   actuator, position and velocity lists stay version-agnostic. -->
+              <xacro:if value="${wrist_version_value == 'v2'}">
+                <body name="r_wrist_flange_front" pos="0.0125 0.000 -0.0845" quat="1 0 0 0">
+                  <joint name="r_wrist_flange_front" type="hinge" ref="0.0" class="actuator_8" range="-0.81 0.81" limited="true" axis="1 0 0" solreflimit="0.002 1"/>
+                  <inertial pos="-0.002877 -0.00917 -0.001436" mass="0.009769" fullinertia="0.000002534828 0.00000064386 0.000001949949 -0.000000106622 -0.000000016697 -0.000000209669"/>
+                  <geom name="r_wrist_flange_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_front_v2" class="visual"/>
+                  <body name="r_wrist_rod_front" pos="-0.0085 -0.029639 -0.004658" quat="1 0 0 0">
+                    <joint name="r_wrist_rod_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                    <inertial pos="0 0.003428 -0.06541" mass="0.016515" fullinertia="0.000036352855 0.000036074026 0.000000397898 0 0 0.000001874856"/>
+                    <geom name="r_wrist_rod_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_rod_front_v2" class="visual"/>
+                  </body>
+                </body>
+                <body name="r_wrist_flange_back" pos="-0.0125 0.000 -0.0845" quat="1 0 0 0">
+                  <joint name="r_wrist_flange_back" type="hinge" ref="0.0" class="actuator_8" range="-0.81 0.81" limited="true" axis="1 0 0" solreflimit="0.002 1"/>
+                  <inertial pos="0.002877 -0.00917 -0.001436" mass="0.009769" fullinertia="0.000002534828 0.00000064386 0.000001949949 0.000000106622 0.000000016697 -0.000000209669"/>
+                  <geom name="r_wrist_flange_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_back_v2" class="visual"/>
+                  <body name="r_wrist_rod_back" pos="0.0085 -0.029639 -0.004658" quat="1 0 0 0">
+                    <joint name="r_wrist_rod_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                    <inertial pos="0 0.003428 -0.06541" mass="0.016515" fullinertia="0.000036352855 0.000036074026 0.000000397898 0 0 0.000001874856"/>
+                    <geom name="r_wrist_rod_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_rod_back_v2" class="visual"/>
+                  </body>
+                </body>
+                <body name="r_wrist_connector_front" pos="0.02900 0.009341 -0.21488" quat="1 0 0 0">
+                  <joint name="r_wrist_connector_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                  <inertial pos="-0.012246 -0.013095 -0.002074" mass="0.01031" fullinertia="0.000001546284 0.000000542679 0.000001766002 -0.000000621838 -0.000000098489 -0.000000198741"/>
+                  <geom name="r_wrist_connector_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_connector_front_v2" class="visual"/>
+                </body>
+                <body name="r_wrist_connector_back" pos="-0.02900 0.009341 -0.21488" quat="1 0 0 0">
+                  <joint name="r_wrist_connector_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                  <inertial pos="0.012246 -0.013095 -0.002074" mass="0.01031" fullinertia="0.000001546284 0.000000542679 0.000001766002 0.000000621838 0.000000098489 -0.000000198741"/>
+                  <geom name="r_wrist_connector_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_connector_back_v2" class="visual"/>
+                </body>
+              </xacro:if>
+              <xacro:unless value="${wrist_version_value == 'v2'}">
+                <body name="r_wrist_flange_front" pos="0.004 0 -0.08450" quat="1 0 0 0">
+                  <joint name="r_wrist_flange_front" type="hinge" ref="0.0" class="actuator_8" range="-0.75 0.98" limited="true" axis="1 0 0" solreflimit="0.002 1"/>
+                  <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                  <geom name="r_wrist_flange_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_front_v1" class="visual"/>
+                  <body name="r_wrist_rod_front" pos="0.0 -0.029961 -0.001522" quat="1 0 0 0">
+                    <joint name="r_wrist_rod_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                    <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                    <geom name="r_wrist_rod_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_rod_front_v1" class="visual"/>
+                  </body>
+                </body>
+                <body name="r_wrist_flange_back" pos="-0.004 0 -0.08450" quat="1 0 0 0">
+                  <joint name="r_wrist_flange_back" type="hinge" ref="0.0" class="actuator_8" range="-0.75 0.98" limited="true" axis="1 0 0" solreflimit="0.002 1"/>
+                  <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                  <geom name="r_wrist_flange_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_flange_back_v1" class="visual"/>
+                  <body name="r_wrist_rod_back" pos="0.0 -0.029961 -0.001522" quat="1 0 0 0">
+                    <joint name="r_wrist_rod_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                    <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                    <geom name="r_wrist_rod_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_rod_back_v1" class="visual"/>
+                  </body>
+                </body>
+                <body name="r_wrist_connector_front" pos="0.02000 0.009341 -0.21488" quat="1 0 0 0">
+                  <joint name="r_wrist_connector_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                  <inertial pos="-0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                  <geom name="r_wrist_connector_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_connector_front_v1" class="visual"/>
+                </body>
+                <body name="r_wrist_connector_back" pos="-0.02000 0.009341 -0.21488" quat="1 0 0 0">
+                  <joint name="r_wrist_connector_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                  <inertial pos="0.00357 -0.01879 0.00461" mass="0.009" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                  <geom name="r_wrist_connector_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_connector_back_v1" class="visual"/>
+                </body>
+              </xacro:unless>
+            </xacro:if>
+            <!-- Wrist range limits are load-bearing stops of the four-bar, so they carry solreflimit;
+                 MuJoCo's default is too soft and lets an impact push them out of fk()'s solvable range.
+                 See README "Wrist joint-limit stiffness". -->
+            <!-- The roll/pitch output chain has the same element structure in both versions;
+                 the end-effector payload and parallel mount are repeated in each branch. -->
+            <!-- Wrist v2 output chain -->
+            <xacro:if value="${wrist_version_value == 'v2'}">
+              <body name="r_wrist_coupler" pos="0 0.005 -0.2395" quat="1 0 0 0">
+                <joint name="r_wrist_roll" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_8'}" range="-0.837758041 1.483529864" axis="1 0 0" solreflimit="0.002 1"/>
+                <joint name="r_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+                <inertial pos="-0.00000001709 -0.009783 -0.006545" mass="0.032863" fullinertia="0.000004514218 0.00000832556 0.000009474258 -0.000000000013 -0.000000000013 -0.000000942445"/>
+                <geom name="r_wrist_coupler_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_coupler_v2" class="visual"/>
+                <body name="r_wrist_mount" pos="0 0 -0.0105" quat="1 0 0 0">
+                  <joint name="r_wrist_pitch" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_8'}" range="-0.5759586532 0.5759586532" axis="0 1 0" solreflimit="0.002 1"/>
+                  <joint name="r_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+                  <inertial pos="0.000000007648 -0.015805 -0.02495" mass="0.058869" fullinertia="0.000014915696 0.000015860639 0.000006306108 0.000000000004 -0.000000000004 0.000001893388"/>
+                  <geom name="r_wrist_mount_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_mount_v2" class="visual"/>
+                  <xacro:include filename="right_end_effector.xml.xacro"/>
+                  <xacro:if value="${parallel_value}">
+                    <!-- Parallel wrist mount (v2: ball joints) -->
+                    <body name="r_wrist_parallel_front" pos="0.021 -0.02025 -0.01675" quat="1 0 0 0">
+                      <joint name="r_wrist_parallel_front" type="ball" ref="0.0" class="passive"/>
+                      <inertial pos="0.00135 -0.010135 0.022592" mass="0.013631" fullinertia="0.000004968614 0.000004480709 0.000000791828 0.000000066531 0.000000336696 0.00000061995"/>
+                      <geom name="r_wrist_parallel_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_front_v2" class="visual"/>
+                    </body>
+                    <body name="r_wrist_parallel_back" pos="-0.021 -0.02025 -0.01675" quat="1 0 0 0">
+                      <joint name="r_wrist_parallel_back" type="ball" ref="0.0" class="passive"/>
+                      <inertial pos="-0.00135 -0.010135 0.022592" mass="0.013631" fullinertia="0.000004968614 0.000004480709 0.000000791828 -0.000000066531 -0.000000336696 0.00000061995"/>
+                      <geom name="r_wrist_parallel_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_back_v2" class="visual"/>
+                    </body>
+                  </xacro:if>
+                </body>
+              </body>
+            </xacro:if>
+            <!-- Wrist v1 output chain -->
+            <xacro:unless value="${wrist_version_value == 'v2'}">
+              <body name="r_wrist_coupler" pos="0 0.005 -0.2395" quat="1 0 0 0">
+                <joint name="r_wrist_roll" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_8'}" range="-0.959931089 1.483529864" axis="1 0 0" solreflimit="0.002 1"/>
+                <joint name="r_wrist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+                <inertial pos="0 -0.00604 0.00031" mass="0.012" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                <geom name="r_wrist_coupler_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_coupler_v1" class="visual"/>
+                <body name="r_wrist_mount" pos="0 0 0" quat="1 0 0 0">
+                  <joint name="r_wrist_pitch" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_8'}" range="-0.698131701 0.698131701" axis="0 1 0" solreflimit="0.002 1"/>
+                  <joint name="r_wrist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+                  <inertial pos="0 -0.01203 -0.02699" mass="0.032" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                  <geom name="r_wrist_mount_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_mount_v1" class="visual"/>
+                  <xacro:include filename="right_end_effector.xml.xacro"/>
+                  <xacro:if value="${parallel_value}">
+                    <!-- Parallel wrist mount (v1: universal joints) -->
+                    <body name="r_wrist_universal_front" pos="0.01000 -0.02150 -0.01000" quat="1 0 0 0">
+                      <joint name="r_wrist_universal_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+                      <inertial pos="0.00000 0.00189 -0.00004" mass="0.005" fullinertia="0.000001 0.000001 0.000001 0 0 0"/>
+                      <geom name="r_wrist_universal_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_universal_front_v1" class="visual"/>
+                      <body name="r_wrist_parallel_front" pos="0 0 0" quat="1 0 0 0">
+                        <joint name="r_wrist_parallel_front" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                        <inertial pos="-0.00094 0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                        <geom name="r_wrist_parallel_front_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_front_v1" class="visual"/>
+                      </body>
+                    </body>
+                    <body name="r_wrist_universal_back" pos="-0.01000 -0.02150 -0.01000" quat="1 0 0 0">
+                      <joint name="r_wrist_universal_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="0 1 0"/>
+                      <inertial pos="0.00000 0.00189 -0.00004" mass="0.002" fullinertia="0.00001 0.00001 0.00001 0.00000 0.00000 0.00000"/>
+                      <geom name="r_wrist_universal_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_universal_back_v1" class="visual"/>
+                      <body name="r_wrist_parallel_back" pos="0 0 0" quat="1 0 0 0">
+                        <joint name="r_wrist_parallel_back" type="hinge" ref="0.0" class="passive" range="-1.57 1.57" axis="1 0 0"/>
+                        <inertial pos="0.00094 0.00038 -0.01026" mass="0.017" fullinertia="0.00001 0.00001 0.00001 0 0 0"/>
+                        <geom name="r_wrist_parallel_back_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_wrist_parallel_back_v1" class="visual"/>
+                      </body>
+                    </body>
+                  </xacro:if>
+                </body>
+              </body>
+            </xacro:unless>
+          </body>
+        </body>
+      </body>
+    </body>
+  </body>
+</mujoco>

@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). Right leg: hip -> knee -> ankle -> foot (ankle v1/v2), parallel ankle linkage. Included inside pelvis by body/{torso,pelvis}_base. -->
+  <body name="r_hip_frame" pos="-0.0115 -0.0897 -0.14" quat="1 0 0 0">
+    <joint name="r_hip_pitch" type="hinge" ref="0.0" class="actuator_150" range="-2.059488517 0.523598776" axis="0 1 0"/>
+    <joint name="r_hip_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+    <inertial pos="0.00973 0.00102 0.00002" mass="1.894" fullinertia="0.00261 0.00267 0.00258 0.00001 0.00000 0.00000"/>
+    <geom name="r_hip_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_frame" class="visual"/>
+    <body name="r_hip_bracket" pos="0 0 0" quat="1 0 0 0">
+      <joint name="r_hip_roll" type="hinge" ref="0.0" class="actuator_120" range="-2.35619449 0.331612558" axis="1 0 0"/>
+      <joint name="r_hip_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="1 0 0"/>
+      <inertial pos="-0.01497 -0.00570 -0.03564" mass="0.573" fullinertia="0.00103 0.00226 0.00206 0.00006 0.00012 -0.00006"/>
+      <geom name="r_hip_bracket_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_bracket" class="visual"/>
+      <geom name="r_hip_bracket_collision" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_hip_bracket" class="collision"/>
+      <body name="r_upper_leg" pos="0.002 0 -0.076" quat="1 0 0 0">
+        <joint name="r_hip_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+        <joint name="r_hip_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+        <inertial pos="-0.01286 0.00388 -0.10563" mass="4.813" fullinertia="0.03161 0.03396 0.01135 0.00007 -0.00101 0.00084"/>
+        <geom name="r_upper_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_hip_yaw_collision" class="collision"/>
+        <geom name="r_upper_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_upper_leg" class="visual"/>
+        <body name="r_lower_leg" pos="-0.055 0 -0.263" quat="1 0 0 0">
+          <joint name="r_knee_pitch" type="hinge" ref="0.0" class="actuator_150" range="0 2.28638132" axis="0 1 0"/>
+          <joint name="r_knee_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+          <inertial pos="0.01044 -0.00096 -0.12320" mass="3.212" fullinertia="0.02686 0.02845 0.0052 -0.00000 -0.00201 0.00048"/>
+          <geom name="r_lower_leg_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="r_lower_leg" class="collision"/>
+          <geom name="r_lower_leg_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_lower_leg" class="visual"/>
+          <!-- Ankle: parallel (4-bar linkage, passive joints) or serial (actuator_90) per parallel_value.
+               Foot inertial/geometry per ankle_version_value. -->
+          <body name="r_ankle_frame" pos="0.005 0 -0.34" quat="1 0 0 0">
+            <joint name="r_ankle_pitch" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_90'}" range="-0.698131701 0.698131701" axis="0 1 0"/>
+            <joint name="r_ankle_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+            <inertial pos="0 0 0" mass="0.084" fullinertia="3e-05 2e-05 3e-05 0 0 0"/>
+            <geom name="r_ankle_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_frame" class="visual"/>
+            <body name="r_foot" pos="0 0 0" quat="1 0 0 0">
+              <joint name="r_ankle_roll" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_90'}" range="-0.34906585 0.34906585" axis="1 0 0"/>
+              <joint name="r_ankle_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+              <xacro:if value="${ankle_version_value == 'v2'}">
+                <!-- v2: reinforced foot - heavier, shifted COM, mesh visual -->
+                <inertial pos="0.01282 0.00000 -0.04623" mass="0.634" fullinertia="0.00073 0.00256 0.00244 0.00000 0.00047 0.00000"/>
+                <geom name="r_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+                <geom name="r_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="r_foot_v2" class="visual"/>
+              </xacro:if>
+              <xacro:unless value="${ankle_version_value == 'v2'}">
+                <!-- v1: original foot - mesh visual, box collision -->
+                <inertial pos="0.02167 0.00000 -0.05193" mass="0.579" fullinertia="0.00045 0.00166 0.00158 0.00000 0.00024 0.00000"/>
+                <geom name="r_foot_collision" pos="0.048 0 -0.0685" quat="1 0 0 0" type="box" size="0.1 0.035 0.0025" class="collision" rgba="0.1 0.1 0.1 1"/>
+                <geom name="r_foot_visual" pos="0.0 0.0 0.0" quat="1 0 0 0" type="mesh" mesh="r_foot_v1" class="visual"/>
+              </xacro:unless>
+            </body>
+          </body>
+          <xacro:if value="${parallel_value}">
+            <body name="r_ankle_flange_out" pos="0.00500 -0.03775 -0.08000" quat="1 0 0 0">
+              <joint name="r_ankle_flange_out" type="hinge" ref="0.0" class="actuator_90" range="-0.63006386 0.609119909" limited="true" axis="0 1 0"/>
+              <inertial pos="-0.01128 0.00742 -0.00003" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+              <geom name="r_ankle_flange_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_flange_out" class="visual"/>
+              <body name="r_ankle_parallel_out" pos="-0.03750 0.00000 -0.00011" quat="1 0 0 0">
+                <joint name="r_ankle_parallel_out" type="ball" ref="0.0" class="passive"/>
+                <inertial pos="0.00167061079 0.00314565753 -0.122969956" mass="0.130" fullinertia="0.00103804073 0.00103907695 3.6539239e-06 -3.52837998e-07 1.38859311e-05 2.62358635e-05"/>
+                <geom name="r_ankle_parallel_out_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_parallel_out" class="visual"/>
+              </body>
+            </body>
+            <body name="r_ankle_flange_in" pos="0.00500 0.03775 -0.18800" quat="1 0 0 0">
+              <joint name="r_ankle_flange_in" type="hinge" ref="0.0" class="actuator_90" range="-0.617846555 0.523598776" limited="true" axis="0 1 0"/>
+              <inertial pos="-0.01128 -0.00742 -0.00006" mass="0.026" fullinertia="0.00001 0.00002 0.00001 0.00000 0.00000 0.00000"/>
+              <geom name="r_ankle_flange_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_flange_in" class="visual"/>
+              <body name="r_ankle_parallel_in" pos="-0.03750 0.00000 -0.00019" quat="1 0 0 0">
+                <joint name="r_ankle_parallel_in" type="ball" ref="0.0" class="passive"/>
+                <inertial pos="0.00158647782 -0.00296668666 -0.0680131771" mass="0.083" fullinertia="0.000226683331 0.000227582794 2.57692963e-06 2.23711499e-07 5.24570629e-06 -9.69157748e-06"/>
+                <geom name="r_ankle_parallel_in_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_ankle_parallel_in" class="visual"/>
+              </body>
+            </body>
+          </xacro:if>
+        </body>
+      </body>
+    </body>
+  </body>
+</mujoco>

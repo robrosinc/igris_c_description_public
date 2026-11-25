@@ -1,0 +1,314 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- <actuator> section. Included by <model>.xml.xacro after equality. -->
+  <actuator>
+    <!-- ===================== motor actuators (body joints) ===================== -->
+    <xacro:if value="${parallel_value}">
+      <motor name="waist_yaw" joint="waist_yaw" class="actuator_60"/>
+      <motor name="l_waist_flange" joint="l_waist_flange" class="actuator_60"/>
+      <motor name="r_waist_flange" joint="r_waist_flange" class="actuator_60"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="waist_yaw" joint="waist_yaw" class="actuator_60"/>
+      <motor name="waist_roll" joint="waist_roll" class="actuator_60"/>
+      <motor name="waist_pitch" joint="waist_pitch" class="actuator_60"/>
+    </xacro:unless>
+    <motor name="l_hip_pitch" joint="l_hip_pitch" class="actuator_150"/>
+    <motor name="l_hip_roll" joint="l_hip_roll" class="actuator_120"/>
+    <motor name="l_hip_yaw" joint="l_hip_yaw" class="actuator_60"/>
+    <motor name="l_knee_pitch" joint="l_knee_pitch" class="actuator_150"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="l_ankle_flange_out" joint="l_ankle_flange_out" class="actuator_90"/>
+      <motor name="l_ankle_flange_in" joint="l_ankle_flange_in" class="actuator_90"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="l_ankle_pitch" joint="l_ankle_pitch" class="actuator_90"/>
+      <motor name="l_ankle_roll" joint="l_ankle_roll" class="actuator_90"/>
+    </xacro:unless>
+    <motor name="r_hip_pitch" joint="r_hip_pitch" class="actuator_150"/>
+    <motor name="r_hip_roll" joint="r_hip_roll" class="actuator_120"/>
+    <motor name="r_hip_yaw" joint="r_hip_yaw" class="actuator_60"/>
+    <motor name="r_knee_pitch" joint="r_knee_pitch" class="actuator_150"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="r_ankle_flange_out" joint="r_ankle_flange_out" class="actuator_90"/>
+      <motor name="r_ankle_flange_in" joint="r_ankle_flange_in" class="actuator_90"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="r_ankle_pitch" joint="r_ankle_pitch" class="actuator_90"/>
+      <motor name="r_ankle_roll" joint="r_ankle_roll" class="actuator_90"/>
+    </xacro:unless>
+    <motor name="l_shoulder_pitch" joint="l_shoulder_pitch" class="actuator_60"/>
+    <motor name="l_shoulder_roll" joint="l_shoulder_roll" class="actuator_60"/>
+    <motor name="l_shoulder_yaw" joint="l_shoulder_yaw" class="actuator_60"/>
+    <motor name="l_elbow_pitch" joint="l_elbow_pitch" class="actuator_60"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="l_wrist_yaw" joint="l_wrist_yaw" class="actuator_8"/>
+      <motor name="l_wrist_flange_front" joint="l_wrist_flange_front" class="actuator_8"/>
+      <motor name="l_wrist_flange_back" joint="l_wrist_flange_back" class="actuator_8"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="l_wrist_yaw" joint="l_wrist_yaw" class="actuator_8"/>
+      <motor name="l_wrist_roll" joint="l_wrist_roll" class="actuator_8"/>
+      <motor name="l_wrist_pitch" joint="l_wrist_pitch" class="actuator_8"/>
+    </xacro:unless>
+    <motor name="r_shoulder_pitch" joint="r_shoulder_pitch" class="actuator_60"/>
+    <motor name="r_shoulder_roll" joint="r_shoulder_roll" class="actuator_60"/>
+    <motor name="r_shoulder_yaw" joint="r_shoulder_yaw" class="actuator_60"/>
+    <motor name="r_elbow_pitch" joint="r_elbow_pitch" class="actuator_60"/>
+    <xacro:if value="${parallel_value}">
+      <motor name="r_wrist_yaw" joint="r_wrist_yaw" class="actuator_8"/>
+      <motor name="r_wrist_flange_front" joint="r_wrist_flange_front" class="actuator_8"/>
+      <motor name="r_wrist_flange_back" joint="r_wrist_flange_back" class="actuator_8"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <motor name="r_wrist_yaw" joint="r_wrist_yaw" class="actuator_8"/>
+      <motor name="r_wrist_roll" joint="r_wrist_roll" class="actuator_8"/>
+      <motor name="r_wrist_pitch" joint="r_wrist_pitch" class="actuator_8"/>
+    </xacro:unless>
+    <motor name="neck_yaw" joint="neck_yaw" class="actuator_7"/>
+    <motor name="neck_pitch" joint="neck_pitch" class="actuator_7"/>
+    <!-- ===================== position actuators (body joints) ===================== -->
+    <xacro:if value="${parallel_value}">
+      <position name="waist_yaw_Pos" joint="waist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_waist_flange_Pos" joint="l_waist_flange" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_waist_flange_Pos" joint="r_waist_flange" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="waist_yaw_Pos" joint="waist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="waist_roll_Pos" joint="waist_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="waist_pitch_Pos" joint="waist_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="l_hip_pitch_Pos" joint="l_hip_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_hip_roll_Pos" joint="l_hip_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_hip_yaw_Pos" joint="l_hip_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_knee_pitch_Pos" joint="l_knee_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="l_ankle_flange_out_Pos" joint="l_ankle_flange_out" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_ankle_flange_in_Pos" joint="l_ankle_flange_in" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="l_ankle_pitch_Pos" joint="l_ankle_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_ankle_roll_Pos" joint="l_ankle_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="r_hip_pitch_Pos" joint="r_hip_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_hip_roll_Pos" joint="r_hip_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_hip_yaw_Pos" joint="r_hip_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_knee_pitch_Pos" joint="r_knee_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="r_ankle_flange_out_Pos" joint="r_ankle_flange_out" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_ankle_flange_in_Pos" joint="r_ankle_flange_in" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="r_ankle_pitch_Pos" joint="r_ankle_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_ankle_roll_Pos" joint="r_ankle_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="l_shoulder_pitch_Pos" joint="l_shoulder_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_shoulder_roll_Pos" joint="l_shoulder_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_shoulder_yaw_Pos" joint="l_shoulder_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="l_elbow_pitch_Pos" joint="l_elbow_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="l_wrist_yaw_Pos" joint="l_wrist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_flange_front_Pos" joint="l_wrist_flange_front" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_flange_back_Pos" joint="l_wrist_flange_back" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="l_wrist_yaw_Pos" joint="l_wrist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_roll_Pos" joint="l_wrist_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="l_wrist_pitch_Pos" joint="l_wrist_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="r_shoulder_pitch_Pos" joint="r_shoulder_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_shoulder_roll_Pos" joint="r_shoulder_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_shoulder_yaw_Pos" joint="r_shoulder_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="r_elbow_pitch_Pos" joint="r_elbow_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <xacro:if value="${parallel_value}">
+      <position name="r_wrist_yaw_Pos" joint="r_wrist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_flange_front_Pos" joint="r_wrist_flange_front" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_flange_back_Pos" joint="r_wrist_flange_back" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <position name="r_wrist_yaw_Pos" joint="r_wrist_yaw" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_roll_Pos" joint="r_wrist_roll" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+      <position name="r_wrist_pitch_Pos" joint="r_wrist_pitch" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    </xacro:unless>
+    <position name="neck_yaw_Pos" joint="neck_yaw" class="actuator_7" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <position name="neck_pitch_Pos" joint="neck_pitch" class="actuator_7" kp="2000" dampratio="1.1" ctrlrange="-3.14 3.14"/>
+    <!-- ===================== velocity actuators (body joints) ===================== -->
+    <xacro:if value="${parallel_value}">
+      <velocity name="waist_yaw_Vel" joint="waist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_waist_flange_Vel" joint="l_waist_flange" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_waist_flange_Vel" joint="r_waist_flange" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="waist_yaw_Vel" joint="waist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="waist_roll_Vel" joint="waist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="waist_pitch_Vel" joint="waist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="l_hip_pitch_Vel" joint="l_hip_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_hip_roll_Vel" joint="l_hip_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_hip_yaw_Vel" joint="l_hip_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_knee_pitch_Vel" joint="l_knee_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="l_ankle_flange_out_Vel" joint="l_ankle_flange_out" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_ankle_flange_in_Vel" joint="l_ankle_flange_in" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="l_ankle_pitch_Vel" joint="l_ankle_pitch" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_ankle_roll_Vel" joint="l_ankle_roll" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="r_hip_pitch_Vel" joint="r_hip_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_hip_roll_Vel" joint="r_hip_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_hip_yaw_Vel" joint="r_hip_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_knee_pitch_Vel" joint="r_knee_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="r_ankle_flange_out_Vel" joint="r_ankle_flange_out" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_ankle_flange_in_Vel" joint="r_ankle_flange_in" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="r_ankle_pitch_Vel" joint="r_ankle_pitch" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_ankle_roll_Vel" joint="r_ankle_roll" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="l_shoulder_pitch_Vel" joint="l_shoulder_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_shoulder_roll_Vel" joint="l_shoulder_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_shoulder_yaw_Vel" joint="l_shoulder_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="l_elbow_pitch_Vel" joint="l_elbow_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="l_wrist_yaw_Vel" joint="l_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_flange_front_Vel" joint="l_wrist_flange_front" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_flange_back_Vel" joint="l_wrist_flange_back" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="l_wrist_yaw_Vel" joint="l_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_roll_Vel" joint="l_wrist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_wrist_pitch_Vel" joint="l_wrist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="r_shoulder_pitch_Vel" joint="r_shoulder_pitch" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_shoulder_roll_Vel" joint="r_shoulder_roll" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_shoulder_yaw_Vel" joint="r_shoulder_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="r_elbow_pitch_Vel" joint="r_elbow_pitch" kv="0" ctrlrange="-50 50"/>
+    <xacro:if value="${parallel_value}">
+      <velocity name="r_wrist_yaw_Vel" joint="r_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_flange_front_Vel" joint="r_wrist_flange_front" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_flange_back_Vel" joint="r_wrist_flange_back" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <xacro:unless value="${parallel_value}">
+      <velocity name="r_wrist_yaw_Vel" joint="r_wrist_yaw" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_roll_Vel" joint="r_wrist_roll" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_wrist_pitch_Vel" joint="r_wrist_pitch" kv="0" ctrlrange="-50 50"/>
+    </xacro:unless>
+    <velocity name="neck_yaw_Vel" joint="neck_yaw" kv="0" ctrlrange="-50 50"/>
+    <velocity name="neck_pitch_Vel" joint="neck_pitch" kv="0" ctrlrange="-50 50"/>
+    <!-- ===================== end-effector actuators (hand / magnet / 1dof) =====================
+         Appended AFTER the 31x3 body actuator blocks (motor/position/velocity) so the existing
+         body indexing (actuator_dof = body-joint count) is preserved. All names carry a "_Hand"
+         marker; ros_controller.cpp counts them to exclude them from actuator_dof and drives them
+         from the hand SHM command. The joint is driven through _HandTrq: setupHand reads kp and
+         the resolved kv off _HandPos and zeroes the _HandPos/_HandVel gears, so those two stay only
+         to match the body actuator triplet. End-effector joints carry the per-Dynamixel
+         classes from defaults.xml.xacro - dynamixel_xc330_t288 (hand) and dynamixel_xm430_w210
+         (1dof, magnet) - not the body actuator_* / passive classes, so they have that class's
+         armature and frictionloss rather than MuJoCo defaults. forcerange caps actuator torque
+         (current-based-position grip, F = I_limit * Kt, I_limit=0.3A from end_effector
+         setCurrentLimits): hand 0.34 Nm (XC330 Kt~1.14), 1dof and magnet 0.39 Nm (XM430-W210-T
+         Kt~1.30). Motor-shaft cap; finger/gripper drive ratio not modeled. -->
+    <xacro:if value="${end_effector_value == 'hand'}">
+      <position name="l_0_thumb_proximal_HandPos" joint="l_0_thumb_proximal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.727875959"/>
+      <position name="l_1_thumb_middle_HandPos" joint="l_1_thumb_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.221730476"/>
+      <position name="l_2_thumb_distal_HandPos" joint="l_2_thumb_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_3_index_middle_HandPos" joint="l_3_index_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_4_index_distal_HandPos" joint="l_4_index_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_5_middle_middle_HandPos" joint="l_5_middle_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_6_middle_distal_HandPos" joint="l_6_middle_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_7_ring_middle_HandPos" joint="l_7_ring_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_8_ring_distal_HandPos" joint="l_8_ring_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_9_little_middle_HandPos" joint="l_9_little_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="l_10_little_distal_HandPos" joint="l_10_little_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_0_thumb_proximal_HandPos" joint="r_0_thumb_proximal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="-1.727875959 0"/>
+      <position name="r_1_thumb_middle_HandPos" joint="r_1_thumb_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.221730476"/>
+      <position name="r_2_thumb_distal_HandPos" joint="r_2_thumb_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_3_index_middle_HandPos" joint="r_3_index_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_4_index_distal_HandPos" joint="r_4_index_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_5_middle_middle_HandPos" joint="r_5_middle_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_6_middle_distal_HandPos" joint="r_6_middle_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_7_ring_middle_HandPos" joint="r_7_ring_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_8_ring_distal_HandPos" joint="r_8_ring_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_9_little_middle_HandPos" joint="r_9_little_middle" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <position name="r_10_little_distal_HandPos" joint="r_10_little_distal" kp="10" dampratio="1" forcerange="-0.34 0.34" ctrlrange="0 1.570796327"/>
+      <motor name="l_0_thumb_proximal_HandTrq" joint="l_0_thumb_proximal" ctrlrange="-0.34 0.34"/>
+      <motor name="l_1_thumb_middle_HandTrq" joint="l_1_thumb_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="l_2_thumb_distal_HandTrq" joint="l_2_thumb_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="l_3_index_middle_HandTrq" joint="l_3_index_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="l_4_index_distal_HandTrq" joint="l_4_index_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="l_5_middle_middle_HandTrq" joint="l_5_middle_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="l_6_middle_distal_HandTrq" joint="l_6_middle_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="l_7_ring_middle_HandTrq" joint="l_7_ring_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="l_8_ring_distal_HandTrq" joint="l_8_ring_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="l_9_little_middle_HandTrq" joint="l_9_little_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="l_10_little_distal_HandTrq" joint="l_10_little_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_0_thumb_proximal_HandTrq" joint="r_0_thumb_proximal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_1_thumb_middle_HandTrq" joint="r_1_thumb_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="r_2_thumb_distal_HandTrq" joint="r_2_thumb_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_3_index_middle_HandTrq" joint="r_3_index_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="r_4_index_distal_HandTrq" joint="r_4_index_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_5_middle_middle_HandTrq" joint="r_5_middle_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="r_6_middle_distal_HandTrq" joint="r_6_middle_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_7_ring_middle_HandTrq" joint="r_7_ring_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="r_8_ring_distal_HandTrq" joint="r_8_ring_distal" ctrlrange="-0.34 0.34"/>
+      <motor name="r_9_little_middle_HandTrq" joint="r_9_little_middle" ctrlrange="-0.34 0.34"/>
+      <motor name="r_10_little_distal_HandTrq" joint="r_10_little_distal" ctrlrange="-0.34 0.34"/>
+      <velocity name="l_0_thumb_proximal_HandVel" joint="l_0_thumb_proximal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_1_thumb_middle_HandVel" joint="l_1_thumb_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_2_thumb_distal_HandVel" joint="l_2_thumb_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_3_index_middle_HandVel" joint="l_3_index_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_4_index_distal_HandVel" joint="l_4_index_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_5_middle_middle_HandVel" joint="l_5_middle_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_6_middle_distal_HandVel" joint="l_6_middle_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_7_ring_middle_HandVel" joint="l_7_ring_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_8_ring_distal_HandVel" joint="l_8_ring_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_9_little_middle_HandVel" joint="l_9_little_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="l_10_little_distal_HandVel" joint="l_10_little_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_0_thumb_proximal_HandVel" joint="r_0_thumb_proximal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_1_thumb_middle_HandVel" joint="r_1_thumb_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_2_thumb_distal_HandVel" joint="r_2_thumb_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_3_index_middle_HandVel" joint="r_3_index_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_4_index_distal_HandVel" joint="r_4_index_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_5_middle_middle_HandVel" joint="r_5_middle_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_6_middle_distal_HandVel" joint="r_6_middle_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_7_ring_middle_HandVel" joint="r_7_ring_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_8_ring_distal_HandVel" joint="r_8_ring_distal" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_9_little_middle_HandVel" joint="r_9_little_middle" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_10_little_distal_HandVel" joint="r_10_little_distal" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+    <!-- Magnet: the motor DOF as a normal triplet, plus the electromagnet as an adhesion
+         actuator on the head body. Adhesion pulls bodies already in contact with that body, so
+         it depends on the *_magnet_face geom and its margin/gap; without those it has no effect
+         at all. gain is calibrated to the measured 25 kgf hold. The hold is linear in gain and
+         in ctrl, at 0.796 of gain (measured over 245..312 N), so
+         gain = 25 * 9.80665 / 0.796 = 308 N, which holds 25.02 kgf in sim. igris_c_hand drives
+         the magnet as a binary on/off, i.e. ctrl is only ever 0 or 1.
+         Re-measure if the face geom changes: the ratio follows the contact manifold, not the
+         face area (an 80x80 face measured 0.967).
+         The figure is for a rigid mount. On the arm the same gain holds about half, because the
+         unactuated *_backlash joints ring against their stops and break the 4-point manifold;
+         that is a property of the arm model, not of the magnet, so it must not be compensated
+         here. ros_controller drives the triplet from hand slot 1 / 7 and the adhesion from
+         the binary slot 0 / 6. -->
+    <xacro:if value="${end_effector_value == 'magnet'}">
+      <motor name="l_magnet_rotate_HandTrq" joint="l_magnet_rotate" ctrlrange="-0.39 0.39"/>
+      <motor name="r_magnet_rotate_HandTrq" joint="r_magnet_rotate" ctrlrange="-0.39 0.39"/>
+      <position name="l_magnet_rotate_HandPos" joint="l_magnet_rotate" kp="20" dampratio="1" forcerange="-0.39 0.39" ctrlrange="-5.93412 0"/>
+      <position name="r_magnet_rotate_HandPos" joint="r_magnet_rotate" kp="20" dampratio="1" forcerange="-0.39 0.39" ctrlrange="0 5.93412"/>
+      <velocity name="l_magnet_rotate_HandVel" joint="l_magnet_rotate" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_magnet_rotate_HandVel" joint="r_magnet_rotate" kv="0" ctrlrange="-50 50"/>
+      <adhesion name="l_magnet_HandAdhesion" body="l_magnet_head" ctrlrange="0 1" gain="308"/>
+      <adhesion name="r_magnet_HandAdhesion" body="r_magnet_head" ctrlrange="0 1" gain="308"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == '1dof'}">
+      <position name="l_1_dof_gripper_moving_HandPos" joint="l_1_dof_gripper_moving" kp="20" dampratio="1" forcerange="-0.39 0.39" ctrlrange="0 1.74533"/>
+      <position name="r_1_dof_gripper_moving_HandPos" joint="r_1_dof_gripper_moving" kp="20" dampratio="1" forcerange="-0.39 0.39" ctrlrange="-1.74533 0"/>
+      <motor name="l_1_dof_gripper_moving_HandTrq" joint="l_1_dof_gripper_moving" ctrlrange="-0.39 0.39"/>
+      <motor name="r_1_dof_gripper_moving_HandTrq" joint="r_1_dof_gripper_moving" ctrlrange="-0.39 0.39"/>
+      <velocity name="l_1_dof_gripper_moving_HandVel" joint="l_1_dof_gripper_moving" kv="0" ctrlrange="-50 50"/>
+      <velocity name="r_1_dof_gripper_moving_HandVel" joint="r_1_dof_gripper_moving" kv="0" ctrlrange="-50 50"/>
+    </xacro:if>
+  </actuator>
+</mujoco>

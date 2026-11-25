@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- <asset> section: materials and meshes. Included by <model>.xml.xacro after defaults. -->
+  <asset>
+    <material name="random" rgba="0.0706 0.0706 0.0706 0.7"/>
+    <material name="default_material" rgba="0.7 0.7 0.7 1"/>
+    <material name="collision_material" rgba="1.0 0.28 0.1 0.9"/>
+    <mesh name="torso" file="igris_c/torso.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="waist_frame" file="common/waist_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="waist_follower" file="common/waist_follower.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis" file="common/pelvis.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_upper_front" file="common/pelvis_upper_front.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_upper_back" file="common/pelvis_upper_back.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="pelvis_lower" file="common/pelvis_lower.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="neck" file="igris_c/neck.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="head" file="igris_c/head.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_frame" file="common/l_hip_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_bracket" file="common/l_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_hip_yaw_collision" file="common/upper_leg_collision.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_upper_leg" file="common/l_upper_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_lower_leg" file="common/l_lower_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_frame" file="common/l_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_foot_v1" file="common/l_foot_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_foot_v2" file="common/l_foot_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_frame" file="common/r_hip_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_bracket" file="common/r_hip_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_hip_yaw_collision" file="common/upper_leg_collision.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_upper_leg" file="common/r_upper_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_lower_leg" file="common/r_lower_leg.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_frame" file="common/r_ankle_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_foot_v1" file="common/r_foot_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_foot_v2" file="common/r_foot_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_shoulder_frame" file="igris_c/l_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_shoulder_bracket" file="igris_c/l_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_upper_arm" file="igris_c/l_upper_arm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_elbow_bracket" file="igris_c/l_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_forearm" file="igris_c/l_forearm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_coupler_v1" file="common/l_wrist_coupler_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_mount_v1" file="common/l_wrist_mount_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_shoulder_frame" file="igris_c/r_shoulder_frame.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_shoulder_bracket" file="igris_c/r_shoulder_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_upper_arm" file="igris_c/r_upper_arm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_elbow_bracket" file="igris_c/r_elbow_bracket.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_forearm" file="igris_c/r_forearm.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_coupler_v1" file="common/r_wrist_coupler_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_mount_v1" file="common/r_wrist_mount_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_waist_flange" file="common/l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_waist_flange" file="common/r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_waist_parallel" file="common/l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_waist_parallel" file="common/r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_flange_out" file="common/l_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_flange_in" file="common/l_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_parallel_out" file="common/l_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_ankle_parallel_in" file="common/l_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_flange_out" file="common/r_ankle_flange_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_flange_in" file="common/r_ankle_flange_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_parallel_out" file="common/r_ankle_parallel_out.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_ankle_parallel_in" file="common/r_ankle_parallel_in.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_front_v1" file="common/l_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_back_v1" file="common/l_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_front_v1" file="common/l_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_back_v1" file="common/l_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_universal_front_v1" file="common/l_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_universal_back_v1" file="common/l_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_front_v1" file="common/r_wrist_connector_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_back_v1" file="common/r_wrist_connector_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_front_v1" file="common/r_wrist_parallel_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_back_v1" file="common/r_wrist_parallel_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_universal_front_v1" file="common/r_wrist_universal_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_universal_back_v1" file="common/r_wrist_universal_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_front_v1" file="common/l_wrist_flange_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_front_v1" file="common/l_wrist_rod_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_back_v1" file="common/l_wrist_flange_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_back_v1" file="common/l_wrist_rod_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_front_v1" file="common/r_wrist_flange_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_front_v1" file="common/r_wrist_rod_front_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_back_v1" file="common/r_wrist_flange_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_back_v1" file="common/r_wrist_rod_back_v1.stl" scale="0.01 0.01 0.01"/>
+    <!-- v2 wrist meshes. Declared unconditionally, matching the foot_v1/foot_v2 pair. -->
+    <mesh name="l_wrist_coupler_v2" file="common/l_wrist_coupler_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_mount_v2" file="common/l_wrist_mount_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_front_v2" file="common/l_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_connector_back_v2" file="common/l_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_front_v2" file="common/l_wrist_flange_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_flange_back_v2" file="common/l_wrist_flange_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_front_v2" file="common/l_wrist_rod_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_rod_back_v2" file="common/l_wrist_rod_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_front_v2" file="common/l_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="l_wrist_parallel_back_v2" file="common/l_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_coupler_v2" file="common/r_wrist_coupler_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_mount_v2" file="common/r_wrist_mount_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_front_v2" file="common/r_wrist_connector_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_connector_back_v2" file="common/r_wrist_connector_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_front_v2" file="common/r_wrist_flange_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_flange_back_v2" file="common/r_wrist_flange_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_front_v2" file="common/r_wrist_rod_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_rod_back_v2" file="common/r_wrist_rod_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_front_v2" file="common/r_wrist_parallel_front_v2.stl" scale="0.01 0.01 0.01"/>
+    <mesh name="r_wrist_parallel_back_v2" file="common/r_wrist_parallel_back_v2.stl" scale="0.01 0.01 0.01"/>
+    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1="1.0 1.0 1.0" rgb2="0.4 0.4 0.4"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.9 0.9 0.9" rgb2=".85 .85 .85"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <!-- end_effector meshes: declared only for the selected end_effector. -->
+    <xacro:if value="${end_effector_value == 'hand'}">
+      <mesh name="l_palm" file="common/end_effector/hand/l_palm.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_palm" file="common/end_effector/hand/r_palm.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_proximal" file="common/end_effector/hand/l_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_middle" file="common/end_effector/hand/l_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_thumb_distal" file="common/end_effector/hand/l_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_proximal" file="common/end_effector/hand/r_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_middle" file="common/end_effector/hand/r_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_thumb_distal" file="common/end_effector/hand/r_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="finger_middle" file="common/end_effector/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="finger_distal" file="common/end_effector/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == 'magnet'}">
+      <!-- Metric CAD export, unlike the cm-scaled meshes above. -->
+      <mesh name="l_magnet" file="common/end_effector/magnet/l_magnet_gripper.stl" scale="1 1 1"/>
+      <mesh name="r_magnet" file="common/end_effector/magnet/r_magnet_gripper.stl" scale="1 1 1"/>
+      <mesh name="l_magnet_head" file="common/end_effector/magnet/l_magnet.stl" scale="1 1 1"/>
+      <mesh name="r_magnet_head" file="common/end_effector/magnet/r_magnet.stl" scale="1 1 1"/>
+    </xacro:if>
+    <xacro:if value="${end_effector_value == '1dof'}">
+      <mesh name="l_1_dof_gripper_fixed" file="common/end_effector/1_dof_gripper/l_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="l_1_dof_gripper_moving" file="common/end_effector/1_dof_gripper/l_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_1_dof_gripper_fixed" file="common/end_effector/1_dof_gripper/r_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+      <mesh name="r_1_dof_gripper_moving" file="common/end_effector/1_dof_gripper/r_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+    </xacro:if>
+  </asset>
+</mujoco>

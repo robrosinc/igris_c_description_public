@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="igris_max">
+  <!-- IGRIS-MAX URDF entry. Each body subtree lives in its own include. -->
+  <!-- ===================== 0. Build parameters ===================== -->
+  <xacro:arg name="base_type" default="pelvis"/>
+  <xacro:arg name="parallel" default="false"/>
+  <xacro:arg name="end_effector" default="hand"/>
+  <xacro:arg name="ankle_version" default="v1"/>
+  <xacro:arg name="wrist_version" default="v1"/>
+  <xacro:arg name="battery_type" default="original"/>
+  <xacro:property name="random_rgba" value="0.0706 0.0706 0.0706 0.7"/>
+  <xacro:property name="base_type_value" value="$(arg base_type)"/>
+  <xacro:property name="parallel_value" value="${str('$(arg parallel)').lower() == 'true'}"/>
+  <!-- ankle_version: v1 = original foot, v2 = reinforced foot (heavier, shifted COM, new PLA anchors). -->
+  <xacro:property name="ankle_version_value" value="$(arg ankle_version)"/>
+  <!-- wrist_version: v1 = intersecting roll/pitch axes, v2 = offset roll/pitch axes. -->
+  <xacro:property name="wrist_version_value" value="$(arg wrist_version)"/>
+  <!-- battery_type: original = two hot-swap igris_max packs, legacy = one carried-over igris_c pack.
+       Swaps the torso mesh and inertial only; no joint or frame changes. -->
+  <xacro:property name="battery_type_value" value="$(arg battery_type)"/>
+  <!-- Mesh path prefix for end-effector STL files (reused across all variants). -->
+  <xacro:property name="mesh_prefix" value="package://igris_c_description/meshes/common/end_effector"/>
+  <xacro:property name="end_effector_value" value="$(arg end_effector)"/>
+  <!-- ===================== 1. Robot tree (torso / pelvis base) =====================
+       Each base file includes body/{left,right}_{leg,arm} and body/head; each arm includes
+       body/<side>_end_effector. -->
+  <xacro:if value="${base_type_value == 'torso'}">
+    <xacro:include filename="body/torso_base.urdf.xacro"/>
+  </xacro:if>
+  <xacro:if value="${base_type_value == 'pelvis'}">
+    <xacro:include filename="body/pelvis_base.urdf.xacro"/>
+  </xacro:if>
+</robot>

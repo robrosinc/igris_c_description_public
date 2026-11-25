@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- <default> section. Included by <model>.xml.xacro after <option>. -->
+  <default>
+    <default class="robot">
+      <default class="visual">
+        <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" rgba="0.9 0.9 0.9 1.0"/>
+      </default>
+      <default class="collision">
+        <geom material="collision_material" rgba="1.0 0.28 0.1 1.0" condim="3" contype="1" conaffinity="1" priority="1" group="2" solref="0.01 1" friction="1 0.005 0.0001"/>
+        <equality solimp="0.9 0.95 0.001 0.5 2" solref="0.002 1"/>
+      </default>
+    </default>
+    <motor ctrllimited="true"/>
+    <default class="actuator_150">
+      <joint damping="0.5" frictionloss="0.5" limited="true" armature="0.2"/>
+      <motor ctrlrange="-150.0 150.0"/>
+    </default>
+    <!-- igris_max shoulder pitch (RBD8050). armature and ctrlrange are the motor's own
+         (ctrlrange matches max_torque in igris_c_can/configs/igris_max). damping and
+         frictionloss are still actuator_150's, pending measurement. -->
+    <default class="actuator_rbd8050">
+      <joint damping="0.5" frictionloss="0.5" limited="true" armature="0.173"/>
+      <motor ctrlrange="-156.24 156.24"/>
+    </default>
+    <default class="actuator_120">
+      <joint damping="0.5" frictionloss="2." limited="true" armature="0.12"/>
+      <motor ctrlrange="-120.0 120.0"/>
+    </default>
+    <default class="actuator_90">
+      <joint damping="0.0" frictionloss="0.1" limited="true" armature="0.1"/>
+      <motor ctrlrange="-90.0 90.0"/>
+    </default>
+    <default class="actuator_60">
+      <joint damping="0.5" frictionloss="0.54" limited="true" armature="0.019"/>
+      <motor ctrlrange="-60.0 60.0"/>
+    </default>
+    <!-- RMD X6-P8-8: wrists on both models, neck_yaw on igris_max (igris_c neck_yaw is X2-P28-7, actuator_7). -->
+    <default class="actuator_8">
+      <joint damping="0.0" frictionloss="0.264" limited="true" armature="0.01433"/>
+      <motor ctrlrange="-8.0 8.0"/>
+    </default>
+    <default class="dynamixel_xc330_t288">
+      <joint damping="0.0" frictionloss="0.001" limited="true" armature="1e-05"/>
+    </default>
+    <default class="dynamixel_xm430_w210">
+      <joint damping="0.0" frictionloss="0.001" limited="true" armature="1e-05"/>
+    </default>
+    <default class="actuator_7">
+      <joint damping="1.0" frictionloss="0.356" limited="true" armature="0.2488"/>
+      <motor ctrlrange="-7.0 7.0"/>
+    </default>
+    <!-- passive: loop-closure joints. No "limited": the compiler (autolimits) limits every joint
+         that declares a range and leaves the range-less ball joints free. -->
+    <default class="passive">
+      <joint damping="0.001" frictionloss="1e-4" armature="1e-6"/>
+    </default>
+    <default class="slack">
+      <joint damping="0.001" frictionloss="1e-4" limited="true" armature="1e-6"/>
+    </default>
+  </default>
+</mujoco>

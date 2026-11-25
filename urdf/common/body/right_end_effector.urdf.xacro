@@ -1,0 +1,501 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Shared by igris_c and igris_max (model trees link here). Right end effector variants: five-finger hand, magnet, 1-DoF gripper (end_effector:=hand|magnet|1dof). Included by body/right_arm. -->
+  <!-- ===================== Hand (end_effector:=hand) ===================== -->
+  <xacro:if value="${end_effector_value == 'hand'}">
+    <link name="r_palm">
+      <inertial>
+        <mass value="0.200"/>
+        <origin xyz="-0.001424 -0.000963 -0.042670"/>
+        <inertia ixx="0.000124221" ixy="4.41312e-06" ixz="8.96115e-06" iyy="0.000226969" iyz="-1.00047e-05" izz="0.000140442"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_palm.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_palm.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_hand" type="fixed">
+      <parent link="r_wrist_mount"/>
+      <child link="r_palm"/>
+      <origin xyz="0 -0.0109 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" rpy="0 0 0"/>
+    </joint>
+    <!-- Camera link: ROS OPTICAL frame (+Z forward, +X right, +Y down), the convention ROS
+         publishes camera data in. The MuJoCo <camera> of the same name sits inside the matching
+         <frame> and carries quat="0 1 0 0" (180 deg about X); that roll is the ONLY difference
+         between the two conventions, since MuJoCo looks along -Z with +Y up.
+         The hand and 1dof variants declare this name (the URDF magnet variant has no camera
+         link); end_effector selects exactly one variant, so at most one link of it exists per
+         expansion. It is the frame of the single
+         sensor/left_hand | sensor/right_hand stream, which igris_c_camera publishes from the
+         /dev/left_hand | /dev/right_hand port regardless of which EE is fitted.
+         The palm camera is mounted INVERTED (the reference model carried that roll in its USD
+         sensor prim, not in the link); verified in the viewer. The L/R pair sits 0.183 deg off a
+         perfect mirror; that is inherited verbatim from the reference CAD (the two palm meshes
+         differ in triangle count as well) and is NOT introduced here. Massless and fixed, so it adds
+         no DoF and no q-index shift to the RBDL model. -->
+    <link name="right_hand_camera_link"/>
+    <joint name="right_hand_camera_joint" type="fixed">
+      <parent link="r_palm"/>
+      <child link="right_hand_camera_link"/>
+      <origin xyz="-0.024420 0.010317 -0.034793" rpy="2.177863132 0.297341539 2.730347616"/>
+    </joint>
+    <link name="r_thumb_proximal">
+      <inertial>
+        <mass value="0.01"/>
+        <origin xyz="0.00736769377 -3.27348285e-05 0.0103021585"/>
+        <inertia ixx="8.13726421e-07" ixy="3.58115493e-09" ixz="-2.29167106e-07" iyy="1.65173834e-06" iyz="1.66159259e-09" izz="1.76040561e-06"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_proximal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_0_joint_thumb_proximal" type="revolute">
+      <parent link="r_palm"/>
+      <child link="r_thumb_proximal"/>
+      <origin xyz="0.026 0.0132 -0.0299" rpy="-3.054326988 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.727875959" upper="0" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_thumb_middle">
+      <inertial>
+        <mass value="0.008"/>
+        <origin xyz="-0.00152976401 -0.000579208741 0.0206296751"/>
+        <inertia ixx="1.48552501e-06" ixy="8.6328696e-09" ixz="-1.27929572e-07" iyy="1.62192224e-06" iyz="4.9554149e-08" izz="5.45604072e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_1_joint_thumb_middle" type="revolute">
+      <parent link="r_thumb_proximal"/>
+      <child link="r_thumb_middle"/>
+      <origin xyz="0.0230 -0.0036 0.015" rpy="-1.221731311 0 -1.570796752"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.221730476" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_thumb_distal">
+      <inertial>
+        <mass value="0.006"/>
+        <origin xyz="-9.72659277e-05 -0.000417499913 0.0168844834"/>
+        <inertia ixx="9.08378995e-07" ixy="-4.45944266e-10" ixz="-1.02627643e-08" iyy="9.39210618e-07" iyz="-3.13436371e-08" izz="2.67938784e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/r_thumb_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_2_joint_thumb_distal" type="revolute">
+      <parent link="r_thumb_middle"/>
+      <child link="r_thumb_distal"/>
+      <origin xyz="0 -0.001 0.04" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_index_middle">
+      <inertial>
+        <mass value="0.008"/>
+        <origin xyz="-2.12973158e-06 -0.000606375566 0.019772219"/>
+        <inertia ixx="1.76481614e-06" ixy="-4.6203336e-11" ixz="4.76122273e-11" iyy="1.813998e-06" iyz="5.15864199e-08" izz="4.34815829e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_3_joint_index_middle" type="revolute">
+      <parent link="r_palm"/>
+      <child link="r_index_middle"/>
+      <origin xyz="0.0305 -0.002 -0.101" rpy="3.141592654 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_index_distal">
+      <inertial>
+        <mass value="0.006"/>
+        <origin xyz="7.55064321e-07 -0.000539511032 0.0179878452"/>
+        <inertia ixx="8.75037334e-07" ixy="-5.88858205e-11" ixz="-2.62959743e-10" iyy="8.98295706e-07" iyz="-2.7494979e-08" izz="2.69543245e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_4_joint_index_distal" type="revolute">
+      <parent link="r_index_middle"/>
+      <child link="r_index_distal"/>
+      <origin xyz="0 -0.001 0.04" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_middle_middle">
+      <inertial>
+        <mass value="0.008"/>
+        <origin xyz="-2.12973158e-06 -0.000606375566 0.019772219"/>
+        <inertia ixx="1.76481614e-06" ixy="-4.6203336e-11" ixz="4.76122273e-11" iyy="1.813998e-06" iyz="5.15864199e-08" izz="4.34815829e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_5_joint_middle_middle" type="revolute">
+      <parent link="r_palm"/>
+      <child link="r_middle_middle"/>
+      <origin xyz="0.0085 -0.002 -0.101" rpy="3.141592654 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_middle_distal">
+      <inertial>
+        <mass value="0.006"/>
+        <origin xyz="7.55064321e-07 -0.000539511032 0.0179878452"/>
+        <inertia ixx="8.75037334e-07" ixy="-5.88858205e-11" ixz="-2.62959743e-10" iyy="8.98295706e-07" iyz="-2.7494979e-08" izz="2.69543245e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_6_joint_middle_distal" type="revolute">
+      <parent link="r_middle_middle"/>
+      <child link="r_middle_distal"/>
+      <origin xyz="0 -0.001 0.04" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_ring_middle">
+      <inertial>
+        <mass value="0.008"/>
+        <origin xyz="-2.12973158e-06 -0.000606375566 0.019772219"/>
+        <inertia ixx="1.76481614e-06" ixy="-4.6203336e-11" ixz="4.76122273e-11" iyy="1.813998e-06" iyz="5.15864199e-08" izz="4.34815829e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_7_joint_ring_middle" type="revolute">
+      <parent link="r_palm"/>
+      <child link="r_ring_middle"/>
+      <origin xyz="-0.0139 -0.001 -0.099" rpy="3.14037309 0.0348858149 -0.0349283776"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_ring_distal">
+      <inertial>
+        <mass value="0.006"/>
+        <origin xyz="7.55064321e-07 -0.000539511032 0.0179878452"/>
+        <inertia ixx="8.75037334e-07" ixy="-5.88858205e-11" ixz="-2.62959743e-10" iyy="8.98295706e-07" iyz="-2.7494979e-08" izz="2.69543245e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_8_joint_ring_distal" type="revolute">
+      <parent link="r_ring_middle"/>
+      <child link="r_ring_distal"/>
+      <origin xyz="0 -0.001 0.04" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_little_middle">
+      <inertial>
+        <mass value="0.008"/>
+        <origin xyz="-2.12973158e-06 -0.000606375566 0.019772219"/>
+        <inertia ixx="1.76481614e-06" ixy="-4.6203336e-11" ixz="4.76122273e-11" iyy="1.813998e-06" iyz="5.15864199e-08" izz="4.34815829e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_middle.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_9_joint_little_middle" type="revolute">
+      <parent link="r_palm"/>
+      <child link="r_little_middle"/>
+      <origin xyz="-0.0362 0.0012 -0.0942" rpy="3.13884432 0.0872096601 -0.0525117398"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <link name="r_little_distal">
+      <inertial>
+        <mass value="0.006"/>
+        <origin xyz="7.55064321e-07 -0.000539511032 0.0179878452"/>
+        <inertia ixx="8.75037334e-07" ixy="-5.88858205e-11" ixz="-2.62959743e-10" iyy="8.98295706e-07" iyz="-2.7494979e-08" izz="2.69543245e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="${random_rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/hand/finger_distal.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_10_joint_little_distal" type="revolute">
+      <parent link="r_little_middle"/>
+      <child link="r_little_distal"/>
+      <origin xyz="0 -0.001 0.04" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:if>
+  <!-- ===================== Magnet (end_effector:=magnet) ===================== -->
+  <xacro:if value="${end_effector_value == 'magnet'}">
+    <!-- Inertial values and mesh are from the hook end-effector CAD export; the parent link and
+         the wrist_version z offset are this tree's.
+         NOTE the right part is the left rotated 180 deg about Z, NOT mirrored about y like the
+         rest of the model. That is why x flips as well as y in the inertial origin and in the
+         camera position, and why iyz flips sign. Verified against the two STLs: identical volume,
+         R == Rz180(L) exactly. Do not "correct" these to the y-mirror rule. -->
+    <!-- Two bodies (bracket + rotating magnet head): the bracket is fixed to the wrist, and the magnet
+         head rotates on its own axis, which the CAD tilts 45 deg about x. Mass/inertia and the
+         joint frame come from the CAD export (magnet.urdf); the meshes are metric, unlike the
+         cm-scaled meshes under meshes/common/. This file is shared by both models, and
+         igris_max's own meshes are metric too.
+
+         The real magnet is two degrees of freedom and only ONE of them is this joint: the other
+         is the electromagnet itself, which igris_c_hand drives as a binary on/off on slot 0 (right,
+         Dynamixel id 11) / slot 6 (left, id 21). This joint is the motor added on top, id 12 /
+         22, i.e. slots 1 and 7. handcmd q maps 0 -> the limit nearest zero, 1 -> the far
+         limit, as it does for the fingers and the 1dof gripper. Travel is 340 deg, inside the CAD's full turn, expressed as a one-sided
+         limit (see the joint below); the real travel is set
+         by the mechanism and measured at init (igris_c_hand calibrates against physical stops,
+         it hardcodes no angle). -->
+    <link name="r_magnet">
+      <inertial>
+        <mass value="0.244"/>
+        <origin xyz="-0.00005 -0.02385 -0.05845"/>
+        <inertia ixx="0.00036" ixy="0.00000" ixz="0.00000" iyy="0.00025" iyz="-0.00005" izz="0.00024"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/r_magnet_gripper.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/r_magnet_gripper.stl" scale="1 1 1"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_magnet" type="fixed">
+      <parent link="r_wrist_mount"/>
+      <child link="r_magnet"/>
+      <origin xyz="0 0 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" rpy="0 0 0"/>
+    </joint>
+    <link name="r_magnet_head">
+      <inertial>
+        <mass value="0.175"/>
+        <origin xyz="-0.00010 0.00000 -0.01252"/>
+        <inertia ixx="0.00003" ixy="0.00000" ixz="0.00000" iyy="0.00003" iyz="0.00000" izz="0.00004"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/r_magnet.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/magnet/r_magnet.stl" scale="1 1 1"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_magnet_rotate" type="revolute">
+      <parent link="r_magnet"/>
+      <child link="r_magnet_head"/>
+      <origin xyz="0 0.019856853 -0.070583262" rpy="0.785398 0 0"/>
+      <!-- One-sided limits, mirrored L/R, as the 1-dof gripper does it: zero is one end of
+           travel and the sign of the span says which way the side turns. 340 deg total.
+           This is where the mirrored servo mounting (ids 12 / 22) is reconciled, because
+           igris_c_hand carries no direction sign - it calibrates against physical stops. -->
+      <axis xyz="0 0 1"/>
+      <limit lower="0" upper="5.93412" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:if>
+  <!-- ===================== 1-DoF gripper (end_effector:=1dof) ===================== -->
+  <xacro:if value="${end_effector_value == '1dof'}">
+    <link name="r_1_dof_gripper_fixed">
+      <inertial>
+        <mass value="0.271"/>
+        <origin xyz="0.00396 -0.00377 -0.05310"/>
+        <inertia ixx="0.00033" ixy="0.00001" ixz="-0.00003" iyy="0.00040" iyz="0.00004" izz="0.00021"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/r_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/r_1_dof_gripper_fixed.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_1_dof_gripper_moving">
+      <inertial>
+        <mass value="0.093"/>
+        <origin xyz="-0.00028 0.00857 -0.04908"/>
+        <inertia ixx="0.00007" ixy="0.00000" ixz="0.00000" iyy="0.00009" iyz="0.00001" izz="0.00004"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/r_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.58 0.58 0.60 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="${mesh_prefix}/1_dof_gripper/r_1_dof_gripper_moving.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="r_1_dof_gripper_fixed" type="fixed">
+      <parent link="r_wrist_mount"/>
+      <child link="r_1_dof_gripper_fixed"/>
+      <origin xyz="0 0 ${-0.02855 if wrist_version_value == 'v2' else -0.024}" rpy="0 0 0"/>
+    </joint>
+    <joint name="r_1_dof_gripper_moving" type="revolute">
+      <parent link="r_1_dof_gripper_fixed"/>
+      <child link="r_1_dof_gripper_moving"/>
+      <!-- rest (q=0) = open: body pre-rolled by -travel and axis flipped so q increases toward closed -->
+      <origin xyz="0 -0.02625 -0.04225" rpy="-1.74533 0 0"/>
+      <axis xyz="-1 0 0"/>
+      <limit lower="-1.74533" upper="0" effort="1000" velocity="100.0"/>
+    </joint>
+    <!-- Camera link: optical convention and shared name as in the hand section above.
+         Parented to the fixed jaw, so the wrist_version z offset above does not reach it.
+         The CAD export gave both sides in degrees: left (roll -158.075975, pitch -24.987626,
+         yaw 90.813002), right (158.075975, -24.987626, -90.813002). Those two are a mirror in
+         the roll/yaw-negated sense, which is the rule for a MOUNT frame; applied to optical
+         frames it leaves the pair 180 deg apart about the view axis, i.e. one image inverted.
+         A viewer check identified the LEFT as the inverted one, so the left value (in
+         left_end_effector.urdf.xacro) is the optical mirror of the CAD right value rather than the
+         CAD left value. The right side, below, is the CAD value unchanged. This now matches the eyes_stereo, palm and magnet pairs, which
+         all satisfy the optical-mirror rule. The view direction is untouched by the fix: only
+         the roll about the view axis changed. -->
+    <link name="right_hand_camera_link"/>
+    <joint name="right_hand_camera_joint" type="fixed">
+      <parent link="r_1_dof_gripper_fixed"/>
+      <child link="right_hand_camera_link"/>
+      <origin xyz="0.050416 -0.020241 -0.052538" rpy="2.758946232 -0.436116346 -1.584985889"/>
+    </joint>
+  </xacro:if>
+</robot>

@@ -1,0 +1,306 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Torso-rooted base: torso -> waist (serial/parallel) -> pelvis, torso IMU. Includes legs, arms and head.
+       Included by <model>.urdf.xacro when base_type:=torso. -->
+  <!-- base_link -> torso -> waist chain -> pelvis -->
+  <link name="base_link"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="torso"/>
+  </joint>
+  <link name="torso">
+    <!-- legacy battery: one igris_c pack in place of the two igris_max packs. -->
+    <xacro:if value="${battery_type_value == 'legacy'}">
+      <inertial>
+        <mass value="19.257"/>
+        <origin xyz="-0.02660 -0.00003 0.17701"/>
+        <inertia ixx="0.27744" ixy="-0.00036" ixz="-0.02457" iyy="0.28124" iyz="-0.00014" izz="0.18066"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_max/torso_legacy_battery.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_max/torso_legacy_battery.stl" scale="1 1 1"/>
+        </geometry>
+      </collision>
+    </xacro:if>
+    <!-- original battery: two hot-swap igris_max packs. -->
+    <xacro:unless value="${battery_type_value == 'legacy'}">
+      <inertial>
+        <mass value="23.921"/>
+        <origin xyz="-0.03558 0.00168 0.18787"/>
+        <inertia ixx="0.34852" ixy="0.00164" ixz="-0.01065" iyy="0.33351" iyz="-0.00098" izz="0.21332"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_max/torso_original_battery.stl" scale="1 1 1"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/igris_max/torso_original_battery.stl" scale="1 1 1"/>
+        </geometry>
+      </collision>
+    </xacro:unless>
+  </link>
+  <joint name="waist_yaw" type="revolute">
+    <parent link="torso"/>
+    <child link="waist_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="waist_frame">
+    <inertial>
+      <mass value="0.208"/>
+      <origin xyz="0.02597 0.00000 -0.00927"/>
+      <inertia ixx="0.00031" ixy="0.00000" ixz="0.00003" iyy="0.00031" iyz="0.00000" izz="0.00058"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/waist_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/waist_frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="waist_roll" type="revolute">
+    <parent link="waist_frame"/>
+    <child link="waist_follower"/>
+    <origin xyz="0.05 0 -0.026" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.314159265" upper="0.314159265" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="waist_follower">
+    <inertial>
+      <mass value="0.136"/>
+      <origin xyz="0.00000 0.00000 -0.00829"/>
+      <inertia ixx="0.00005" ixy="0.00000" ixz="0.00000" iyy="0.00011" iyz="0.00000" izz="0.00007"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/waist_follower.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/waist_follower.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="waist_pitch" type="revolute">
+    <parent link="waist_follower"/>
+    <child link="pelvis"/>
+    <origin xyz="0 0 -0.04" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.872664626" upper="0.287979327" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="pelvis">
+    <inertial>
+      <mass value="8.124"/>
+      <origin xyz="-0.04960 0.0 -0.05163"/>
+      <inertia ixx="0.04342" ixy="0.00001" ixz="0.00325" iyy="0.05156" iyz="0.00000" izz="0.04212"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/pelvis.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/pelvis_upper_front.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/pelvis_upper_back.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/common/pelvis_lower.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- ===================== Parallel waist linkage (parallel:=true) ===================== -->
+  <xacro:if value="${parallel_value}">
+    <link name="dummy_1_x"/>
+    <link name="dummy_1_y"/>
+    <link name="dummy_2_x"/>
+    <link name="dummy_2_y"/>
+    <link name="l_waist_flange">
+      <inertial>
+        <mass value="0.043"/>
+        <origin xyz="-0.01470 -0.00883 -0.00167"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/l_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="l_waist_parallel">
+      <inertial>
+        <mass value="0.030"/>
+        <origin xyz="0.000833838495 0.00174648034 0.0299297889"/>
+        <inertia ixx="1.51921123e-05" ixy="-2.29912453e-08" ixz="-3.95117024e-07" iyy="1.57628747e-05" iyz="-8.67112425e-07" izz="9.48252971e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/l_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_waist_flange">
+      <inertial>
+        <mass value="0.043"/>
+        <origin xyz="-0.01470 0.00883 -0.00167"/>
+        <inertia ixx="0.00001" ixy="0.00000" ixz="0.00000" iyy="0.00004" iyz="0.00000" izz="0.00003"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_waist_flange.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="r_waist_parallel">
+      <inertial>
+        <mass value="0.030"/>
+        <origin xyz="0.00083550619 -0.00174672193 0.0299472554"/>
+        <inertia ixx="1.5190835e-05" ixy="2.31155963e-08" ixz="-3.96412919e-07" iyy="1.576145e-05" iyz="8.66738472e-07" izz="9.4815977e-07"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+        <material name="random">
+          <color rgba="0.0706 0.0706 0.0706 0.7"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://igris_c_description/meshes/common/r_waist_parallel.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="l_waist_flange" type="revolute">
+      <parent link="pelvis"/>
+      <child link="l_waist_flange"/>
+      <origin xyz="0 0.09050 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_x" type="revolute">
+      <parent link="l_waist_flange"/>
+      <child link="dummy_1_x"/>
+      <origin xyz="-0.05167 0.00000 -0.00587" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_y" type="revolute">
+      <parent link="dummy_1_x"/>
+      <child link="dummy_1_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="l_waist_parallel_z" type="revolute">
+      <parent link="dummy_1_y"/>
+      <child link="l_waist_parallel"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_flange" type="revolute">
+      <parent link="pelvis"/>
+      <child link="r_waist_flange"/>
+      <origin xyz="0 -0.09050 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_x" type="revolute">
+      <parent link="r_waist_flange"/>
+      <child link="dummy_2_x"/>
+      <origin xyz="-0.05167 0.00000 -0.00587" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_y" type="revolute">
+      <parent link="dummy_2_x"/>
+      <child link="dummy_2_y"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+    <joint name="r_waist_parallel_z" type="revolute">
+      <parent link="dummy_2_y"/>
+      <child link="r_waist_parallel"/>
+      <origin xyz="0 0 0 " rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="-1.570796327" upper="1.570796327" effort="1000" velocity="100.0"/>
+    </joint>
+  </xacro:if>
+  <!-- Torso IMU, REP-145 body axes (not the camera links' optical convention). IMU data is
+       published in a frame rotated Ry(+90 deg) from the torso on every model (the IMU driver
+       rotates a differently mounted sensor into that frame), so this joint carries the same
+       rotation, matching the IMU site in the MuJoCo model. Declared in both torso_base and
+       pelvis_base; exactly one is included per expansion. -->
+  <link name="torso_imu_link"/>
+  <joint name="torso_imu_joint" type="fixed">
+    <parent link="torso"/>
+    <child link="torso_imu_link"/>
+    <origin xyz="0.065004 0 0.0285072486" rpy="0 1.570796327 0"/>
+  </joint>
+  <!-- ===================== Limbs and head ===================== -->
+  <xacro:include filename="left_leg.urdf.xacro"/>
+  <xacro:include filename="right_leg.urdf.xacro"/>
+  <xacro:include filename="left_arm.urdf.xacro"/>
+  <xacro:include filename="right_arm.urdf.xacro"/>
+  <xacro:include filename="head.urdf.xacro"/>
+</robot>

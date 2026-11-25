@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<mujoco xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Torso-rooted base: torso -> waist (serial/parallel) -> pelvis, torso IMU. Includes legs (inside pelvis), arms and head (inside torso).
+       Included inside the root torso <body> (free or fixed) by <model>.xml.xacro. -->
+  <!-- Published IMU frame, not the torso frame. igris_c_imu absorbs the per-model mount, so
+       both models carry this same quat; do not change one alone. -->
+  <site name="torso_imu_link" pos="0.050 0 0.047" quat="0.7071068 0 0.7071068 0" size="0.01"/>
+  <inertial pos="0.00175 0.00112 0.15154" mass="12.974" fullinertia="0.15110 0.12880 0.08070 -0.00136 0.00843 -0.00089"/>
+  <geom name="torso_collision" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="torso" class="collision"/>
+  <geom name="torso_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="torso" class="visual"/>
+  <body name="waist_frame" pos="0.0 0.0 0.0" quat="1 0 0 0">
+    <joint name="waist_yaw" type="hinge" ref="0.0" class="actuator_60" range="-1.570796327 1.570796327" axis="0 0 1"/>
+    <joint name="waist_yaw_backlash" type="hinge" ref="0.0" class="slack" range="-0.005 0.005" axis="0 0 1"/>
+    <inertial pos="0.02597 0 -0.00927" mass="0.208" fullinertia="0.00031 0.00031 0.00058 0.00000 0.00003 0.00000"/>
+    <geom name="waist_frame_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="waist_frame" class="visual"/>
+    <body name="waist_follower" pos="0.05 0 -0.026" quat="1 0 0 0">
+      <joint name="waist_roll" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_60'}" range="-0.314159265 0.314159265" axis="1 0 0"/>
+      <joint name="waist_roll_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="1 0 0"/>
+      <inertial pos="0.0 0.0 -0.00829" mass="0.136" fullinertia="0.00005 0.00011 0.00007 0 0 0"/>
+      <geom name="waist_follower_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="waist_follower" class="visual"/>
+      <body name="pelvis" pos="0.0 0.0 -0.04" quat="1 0 0 0">
+        <site name="pelvis_link_site" pos="0.050 0 0.047" quat="1 0 0 0" size="0.01"/>
+        <joint name="waist_pitch" type="hinge" ref="0.0" class="${'passive' if parallel_value else 'actuator_60'}" range="-0.872664626 0.287979327" axis="0 1 0"/>
+        <joint name="waist_pitch_backlash" type="hinge" ref="0.0" class="slack" range="-0.01 0.01" axis="0 1 0"/>
+        <inertial pos="-0.04960 0.0 -0.05163" mass="8.124" fullinertia="0.04342 0.05156 0.04212 0.00001 0.00325 0.00000"/>
+        <geom name="pelvis_collision_upper_front" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_front" class="collision"/>
+        <geom name="pelvis_collision_upper_back" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_upper_back" class="collision"/>
+        <geom name="pelvis_collision_lower" pos="0 0 0" quat="1 0 0 0" type="mesh" mesh="pelvis_lower" class="collision"/>
+        <geom name="pelvis_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="pelvis" class="visual" rgba="0.9 0.9 0.9 0.3"/>
+        <!-- ===================== Parallel waist linkage (parallel:=true) ===================== -->
+        <xacro:if value="${parallel_value}">
+          <body name="l_waist_flange" pos="0 0.0905 0" quat="1 0 0 0">
+            <joint name="l_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+            <inertial pos="-0.01470 -0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+            <geom name="l_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_flange" class="visual"/>
+            <body name="l_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+              <joint name="l_waist_parallel" type="ball" ref="0.0" class="passive"/>
+              <inertial pos="0.000833838495 0.00174648034 0.0299297889" mass="0.030" fullinertia="1.51921123e-05 1.57628747e-05 9.48252971e-07 -2.29912453e-08 -3.95117024e-07 -8.67112425e-07"/>
+              <geom name="l_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="l_waist_parallel" class="visual"/>
+            </body>
+          </body>
+          <body name="r_waist_flange" pos="0 -0.0905 0" quat="1 0 0 0">
+            <joint name="r_waist_flange" type="hinge" ref="0.0" class="actuator_60" range="-0.34 0.87" limited="true" axis="0 1 0"/>
+            <inertial pos="-0.01470 0.00883 -0.00167" mass="0.043" fullinertia="0.00001 0.00004 0.00003 0 0 0"/>
+            <geom name="r_waist_flange_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_flange" class="visual"/>
+            <body name="r_waist_parallel" pos="-0.05167 0.00000 -0.00587" quat="1 0 0 0">
+              <joint name="r_waist_parallel" type="ball" ref="0.0" class="passive"/>
+              <inertial pos="0.00083550619 -0.00174672193 0.0299472554" mass="0.030" fullinertia="1.5190835e-05 1.576145e-05 9.4815977e-07 2.31155963e-08 -3.96412919e-07 8.66738472e-07"/>
+              <geom name="r_waist_parallel_visual" pos="0 0 0" quat="1 0 0 0" material="random" type="mesh" mesh="r_waist_parallel" class="visual"/>
+            </body>
+          </body>
+        </xacro:if>
+        <xacro:include filename="left_leg.xml.xacro"/>
+        <xacro:include filename="right_leg.xml.xacro"/>
+      </body>
+    </body>
+  </body>
+  <xacro:include filename="left_arm.xml.xacro"/>
+  <xacro:include filename="right_arm.xml.xacro"/>
+  <xacro:include filename="head.xml.xacro"/>
+</mujoco>

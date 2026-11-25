@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Head: neck -> head, eyes stereo cameras, RealSense D435i.
+       Included by body/{torso,pelvis}_base. -->
+  <joint name="neck_yaw" type="revolute">
+    <parent link="torso"/>
+    <child link="neck"/>
+    <origin xyz="0 0 0.357" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.221730476" upper="1.221730476" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="neck">
+    <inertial>
+      <mass value="0.310"/>
+      <origin xyz="-0.00005 -0.00130 -0.00264"/>
+      <inertia ixx="0.00017" ixy="0.00000" ixz="0.00000" iyy="0.00010" iyz="0.00001" izz="0.00016"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c/neck.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c/neck.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="neck_pitch" type="revolute">
+    <parent link="neck"/>
+    <child link="head"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.523598776" upper="0.523598776" effort="1000" velocity="100.0"/>
+  </joint>
+  <link name="head">
+    <inertial>
+      <mass value="1.468"/>
+      <origin xyz="0.02850 0.00290 0.12862"/>
+      <inertia ixx="0.00574" ixy="-0.00008" ixz="0.00025" iyy="0.00727" iyz="0.00013" izz="0.00503"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c/head.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="random">
+        <color rgba="0.0706 0.0706 0.0706 0.7"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://igris_c_description/meshes/igris_c/head.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- ===================== Head cameras =====================
+       Stereo RGB pair published as the single stitched sensor/eyes_stereo stream on the real
+       robot; the link names are that topic split per eye. Camera links are ROS OPTICAL frames
+       (+Z forward, +X right, +Y down); the physical toe-out that reads as yaw +-0.244346095 in
+       a +X-forward mount frame is folded into these values. The MuJoCo <camera> of the same name sits in the matching <frame> and adds
+       quat="0 1 0 0" (180 deg about X) to reach MuJoCo's -Z view / +Y up convention. -->
+  <link name="eyes_stereo_left_link"/>
+  <joint name="eyes_stereo_left_joint" type="fixed">
+    <parent link="head"/>
+    <child link="eyes_stereo_left_link"/>
+    <origin xyz="0.095516 0.026076 0.121000" rpy="-1.570796327 0 -1.326450232"/>
+  </joint>
+  <link name="eyes_stereo_right_link"/>
+  <joint name="eyes_stereo_right_joint" type="fixed">
+    <parent link="head"/>
+    <child link="eyes_stereo_right_link"/>
+    <origin xyz="0.095516 -0.026076 0.121000" rpy="-1.570796327 0 -1.815142422"/>
+  </joint>
+  <!-- ===================== Head RealSense D435i =====================
+       Intel RealSense D435i. Frames follow the device's own reference points, so each one is
+       parented to the reference its number is measured from rather than all to `head`.
+       Link names are the sensor/d435_* topic names igris_c_camera publishes, so the prefix is
+       d435_, not the device's d435i.
+
+       d435_center_link  MOUNT frame (+X forward, +Y left, +Z up), like every other
+                          *_camera_link here. Origin = centerline of the 1/4-20 tripod hole,
+                          which is what the D435x mechanical drawings measure from. Pose from
+                          the D435i mount drawing (2026-07-23): pitched
+                          54 deg down (0.942478 rad).
+       d435_depth_link   The SENSOR's depth origin: zero offset from the left imager, per
+                          datasheet 4.8.1. This is the geometry of the device.
+
+                          NOTE, and this is the one place where the URDF and the MuJoCo model
+                          deliberately differ: igris_c_camera runs align_depth: true, and
+                          rs2::align rebuilds the depth profile out of the colour one:
+                          copies colour's intrinsics wholesale, takes colour's width/height, and
+                          registers an IDENTITY extrinsic to colour (align.cpp:191-196). So the
+                          sensor/d435_depth that is actually PUBLISHED is a colour-frame image.
+                          The MuJoCo d435_depth camera therefore sits in the d435_color frame
+                          with colour's fovy 42, while this link stays on the imager.
+                          CONSEQUENCE: a consumer stamping or looking up the frame of the
+                          published aligned depth wants d435_color_link, NOT this link. This
+                          link describes where the depth sensor is, not where its output lives.
+                          If align_depth is ever set false the two converge again: move the
+                          MuJoCo camera back into the d435_ir_left frame and restore fovy 62.
+       d435_color_link   RGB origin, 32.5 mm from the same centerline (15 mm outboard of
+                          depth), same -4.2 mm depth. NOT in Table 4-19, which lists only the
+                          left imager; supplied from the mount drawing.
+       d435_imu_link     IMU origin. librealsense ds-calib-parsers.cpp:159 hardcodes the D435i
+                          depth_to_imu fallback translation as (-0.00552, 0.00510, 0.01174) with
+                          an identity rotation. rs2_extrinsics maps p_to = R*p_from + t
+                          (rs.cpp:4363), so the IMU ORIGIN expressed in depth coordinates is -t:
+                          (+0.00552, -0.00510, -0.01174). The sign does flip. Parented to
+                          d435_ir_left_link because that is the SENSOR's depth frame the constant
+                          is measured from; d435_depth_link is the aligned output.
+                          Rotation is identity on purpose: librealsense already rotates raw IMU
+                          samples into the depth coordinate system before publishing them
+                          (motion-transform.cpp correct_motion_helper), so the published
+                          sensor/d435_imu axes ARE the depth axes.
+
+       d435_ir_left_link  The physical left imager, and the SENSOR's depth origin (datasheet
+                          4.8.1: "the depth origin X-Y coordinates are the X-Y center of the left
+                          imager"; librealsense registers the two with register_same_extrinsics,
+                          d400-device.cpp:594). This is the frame sensor/d435_ir_left is
+                          published in, and the frame the IMU offset is measured from.
+                            +Y 17.5 mm  Table 4-19, 1/4-20 centerline -> left imager, D435/D435i
+                            -X  4.2 mm  Table 4-16, camera front glass Z' = -4.2 mm, i.e. the
+                                        depth ground-truth zero sits 4.2 mm behind the glass
+       d435_ir_right_link Second imager, 50 mm stereo baseline (Table 3-49). Sign fixed by
+                          geometry, not by the librealsense sign convention: on the centerline
+                          axis the left imager is +17.5 mm, so the right one is either -32.5 or
+                          +67.5 mm, and the D435 is 90 mm wide (+-45 mm), which leaves only
+                          -32.5 mm. That is +X 0.050 m in the depth optical frame, i.e. to the
+                          right, as expected.
+
+       depth/color/imu/ir_* are OPTICAL frames (+Z forward, +X right, +Y down), hence the
+       rpy="-pi/2 0 -pi/2" against the mount frame. Only d435_center_link keeps the
+       +X-forward mount convention. -->
+  <link name="d435_center_link"/>
+  <joint name="d435_center_joint" type="fixed">
+    <parent link="head"/>
+    <child link="d435_center_link"/>
+    <origin xyz="0.112677 0 0.159748" rpy="0 0.942478 0"/>
+  </joint>
+  <link name="d435_ir_left_link"/>
+  <joint name="d435_ir_left_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_ir_left_link"/>
+    <origin xyz="-0.0042 0.0175 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_depth_link"/>
+  <joint name="d435_depth_joint" type="fixed">
+    <parent link="d435_ir_left_link"/>
+    <child link="d435_depth_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="d435_color_link"/>
+  <joint name="d435_color_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_color_link"/>
+    <origin xyz="-0.0042 0.0325 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_ir_right_link"/>
+  <joint name="d435_ir_right_joint" type="fixed">
+    <parent link="d435_center_link"/>
+    <child link="d435_ir_right_link"/>
+    <origin xyz="-0.0042 -0.0325 0" rpy="-1.570796327 0 -1.570796327"/>
+  </joint>
+  <link name="d435_imu_link"/>
+  <joint name="d435_imu_joint" type="fixed">
+    <parent link="d435_ir_left_link"/>
+    <child link="d435_imu_link"/>
+    <origin xyz="0.00552 -0.00510 -0.01174" rpy="0 0 0"/>
+  </joint>
+</robot>
